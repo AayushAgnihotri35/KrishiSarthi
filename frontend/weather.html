@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weather & Advisory | KrishiSarthi</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  
+  <style>
+    body {
+      background: #f5f5f5;
+    }
+    .card {
+      transition: box-shadow 0.3s ease;
+    }
+    .card:hover {
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+    .navbar-nav {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: nowrap;
+      width: 100%;
+      overflow-x:1 auto;
+    }
+    .navbar-nav .nav-item {
+      flex: 1 1 auto;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .weather-img {
+      max-width: 100%;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+<!-- Master Navbar  -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-success">
+  
+  <div class="container-fluid">
+    <!-- Brand -->
+    <a class="navbar-brand" href="index.html">
+      <img src="./assests//logo.jpg" alt="Logo" width="40" height="40" class="me-2">
+      <strong>KrishiSarthi</strong>
+    </a>
+
+    <!-- Toggler (for mobile view) -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Navbar Links -->
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="Equipment.html">Equipment</a></li>
+        <li class="nav-item"><a class="nav-link" href="weather.html">Weather & Advisory</a></li>
+        <li class="nav-item"><a class="nav-link" href="market.html">Market Linkage</a></li>
+        <li class="nav-item"><a class="nav-link" href="finance.html">Finance</a></li>
+        <li class="nav-item"><a class="nav-link" href="insurance.html">Insurance</a></li>
+        <li class="nav-item"><a class="nav-link" href="loan.html">Loan</a></li>
+        <li class="nav-item"><a class="nav-link" href="subcidy.html">Subsidy</a></li>
+        <li class="nav-item"><a class="nav-link" href="Login.html">Login</a></li>
+        <li class="nav-item"><a class="nav-link" href="SignUp.html">Signup</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+  <!-- Weather Section -->
+  <div class="container py-4 px-3 px-md-5">
+  <h2 class="text-center text-md-start mb-4">Live Weather & Crop Advisory</h2>
+
+  <div class="row g-4 align-items-start">
+    <!-- Left: Carousel -->
+    <div class="col-lg-6 h-100">
+      <div id="weatherCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000">
+        <div class="carousel-inner rounded">
+          <div class="carousel-item active">
+            <img src="./assests/crops.jpg" class="d-block w-100" alt="Weather Image 1">
+          </div>
+          <div class="carousel-item">
+            <img src="./assests/rain.jpg" class="d-block w-100" alt="Weather Image 2">
+          </div>
+          <div class="carousel-item">
+            <img src="./assests/clouds.jpeg" class="d-block w-100" alt="Weather Image 3">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Select City + Cards -->
+    <div class="col-lg-6 h-100 d-flex flex-column">
+      <div class="mb-3">
+        <label for="citySelect" class="form-label">Select City (Maharashtra):</label>
+        <select class="form-select w-100" id="citySelect">
+          <option value="" disabled selected>Select a city</option>
+          <option>Nashik</option>
+          <option>Pune</option>
+          <option>Mumbai</option>
+          <option>Kolhapur</option>
+          <option>Akola</option>
+          <option>Aurangabad</option>
+        </select>
+      </div>
+
+      <div class="card bg-light mb-4">
+        <div class="card-header bg-success text-white">Current Weather</div>
+        <div class="card-body">
+          <p id="weatherData">Please select a city to see weather data.</p>
+        </div>
+      </div>
+
+      <div class="card bg-light">
+        <div class="card-header bg-success text-white">Suggested Crop Advisory</div>
+        <div class="card-body">
+          <p id="advisory">Crop advisory will appear here based on the weather condition.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Api -->
+  <script>
+    const apiKey = 'a290168e88398836e754c4dd1227105c';
+    const citySelect = document.getElementById('citySelect');
+    const weatherData = document.getElementById('weatherData');
+    const advisory = document.getElementById('advisory');
+
+    function fetchWeather(city) {
+      fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`)
+        .then(res => res.json())
+        .then(data => {
+          const temp = data.main.temp;
+          const condition = data.weather[0].main;
+
+          weatherData.innerHTML = `<strong>${city}</strong><br>Temperature: ${temp}&deg;C<br>Condition: ${condition}`;
+
+          if (condition === 'Rain') {
+            advisory.innerText = "Avoid pesticide spraying today. Ensure proper drainage in fields.";
+          } else if (condition === 'Clear') {
+            advisory.innerText = "Good day for sowing and applying fertilizers.";
+          } else if (condition === 'Clouds') {
+            advisory.innerText = "Monitor for fungal infections; partial irrigation advised.";
+          } else {
+            advisory.innerText = "Monitor weather continuously and follow general agronomic advice.";
+          }
+        })
+        .catch(err => {
+          weatherData.innerText = "Error fetching weather data.";
+          advisory.innerText = "Advisory unavailable.";
+        });
+    }
+
+    citySelect.addEventListener('change', () => {
+      if (citySelect.value) {
+        fetchWeather(citySelect.value);
+      }
+    });
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+   <!-- Footer -->
+  <footer class="bg-success text-white text-center py-3">
+    <p class="mb-0">&copy; 2025 KrishiSarthi Platform. All rights reserved.</p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,66 @@
+.hero-section {
+  background: url('assests/farm.jpg') center center/cover no-repeat;
+  height: 80vh;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.hero-section .overlay {
+  background-color: rgba(0, 100, 0, 0.5);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+}
+
+.navbar-nav {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  width: 100%;
+  overflow-x: 1 auto; /* allows horizontal scroll on small screens if needed */
+}
+
+.navbar-nav .nav-item {
+  flex: 1 1 auto;
+  text-align: center;
+  white-space: nowrap;
+  padding: 0 0;
+}
+
+.navbar-nav .nav-link {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+.card-img-top {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover .card-img-top {
+  transform: scale(1.05); /* zoom effect */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* optional lift effect */
+}
+html {
+  scroll-behavior: smooth;
+}
+
+.carousel-inner {
+  min-height: 200px;
+}
+.carousel-inner img {
+  object-fit: cover;
+  height: 100%;
+  border-radius: 10px;
+}
+
+
+
+

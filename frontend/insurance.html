@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crop Insurance | KrishiSarthi</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(to right, #f0fefc, #def6f7);
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .scheme-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .scheme-card {
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      padding: 20px;
+      background-color: white;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      transition: 0.3s ease-in-out;
+    }
+     .navbar-nav {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: nowrap;
+      width: 100%;
+      overflow-x:1 auto;
+    }
+    .scheme-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    }
+    .scheme-img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 5px;
+      margin-bottom: 15px;
+    }
+    .btn-custom {
+      background-color: #198754;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Master Navbar (Use on all pages) -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-success">
+  <div class="container-fluid">
+    <!-- Brand -->
+    <a class="navbar-brand" href="index.html">
+      <img src="./assests//logo.jpg" alt="Logo" width="40" height="40" class="me-2">
+      <strong>KrishiSarthi</strong>
+    </a>
+
+    <!-- Toggler (for mobile view) -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Navbar Links -->
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="Equipment.html">Equipment</a></li>
+        <li class="nav-item"><a class="nav-link" href="weather.html">Weather & Advisory</a></li>
+        <li class="nav-item"><a class="nav-link" href="market.html">Market Linkage</a></li>
+        <li class="nav-item"><a class="nav-link" href="finance.html">Finance</a></li>
+        <li class="nav-item"><a class="nav-link" href="insurance.html">Insurance</a></li>
+        <li class="nav-item"><a class="nav-link" href="loan.html">Loan</a></li>
+        <li class="nav-item"><a class="nav-link" href="subcidy.html">Subsidy</a></li>
+        <li class="nav-item"><a class="nav-link" href="Login.html">Login</a></li>
+        <li class="nav-item"><a class="nav-link" href="SignUp.html">Signup</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+<div class="container mt-5">
+  <div class="scheme-header">
+    <h2 class="text-success">🌾 Crop Insurance Schemes</h2>
+    <p>Protect your crops against unexpected weather conditions, pests, and disasters with government-backed insurance plans.</p>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="scheme-card">
+        <img src="./assests/fasal.jpg" alt="PMFBY" class="scheme-img">
+        <h5>PMFBY - Pradhan Mantri Fasal Bima Yojana</h5>
+        <p>Premiums: 2% for Kharif, 1.5% for Rabi. Coverage for yield loss, calamities, and post-harvest issues.</p>
+        <a href="https://pmfby.gov.in" target="_blank" class="btn btn-custom">Enroll at PMFBY</a>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="scheme-card">
+        <img src="./assests/weather.jpg" alt="WBCIS" class="scheme-img">
+        <h5>Weather Based Crop Insurance Scheme (WBCIS)</h5>
+        <p>Index-based insurance covering weather triggers like temperature, rainfall, humidity affecting crops.</p>
+        <a href="https://pmfby.gov.in/wbcis" target="_blank" class="btn btn-custom">View Details</a>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="scheme-card">
+        <img src="./assests/postharvest.jpeg" alt="Calamity Coverage" class="scheme-img">
+        <h5>Localized Calamity & Post-Harvest Loss Cover</h5>
+        <p>Protection against hailstorms, landslides, floods, pests, and crop loss post-harvest due to unseasonal rain.</p>
+        <a href="https://agricoop.gov.in" target="_blank" class="btn btn-custom">Check Eligibility</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

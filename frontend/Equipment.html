@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Equipment - KrishiSarthi</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .hero-section {
+      background: url('./assests/equipment-hero.jpg') center/cover no-repeat;
+      height: 350px;
+      position: relative;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .hero-overlay {
+      background: rgba(0, 0, 0, 0.5);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .category-icon {
+      width: 60px;
+      height: 60px;
+      background: #198754;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      margin: 0 auto 10px;
+      font-size: 28px;
+    }
+
+    .equipment-card img {
+      height: 200px;
+      object-fit: cover;
+    }
+
+    .subsidy-section {
+      background: #e9f7ef;
+      padding: 40px 0;
+    }
+  </style>
+</head>
+<body class="bg-light">
+
+  <!-- Navbar -->
+<!-- Master Navbar (Use on all pages) -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-success">
+  <div class="container-fluid">
+    <!-- Brand -->
+    <a class="navbar-brand" href="index.html">
+      <img src="./assests//logo.jpg" alt="Logo" width="40" height="40" class="me-2">
+      <strong>KrishiSarthi</strong>
+    </a>
+
+    <!-- Toggler (for mobile view) -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Navbar Links -->
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="Equipment.html">Equipment</a></li>
+        <li class="nav-item"><a class="nav-link" href="weather.html">Weather & Advisory</a></li>
+        <li class="nav-item"><a class="nav-link" href="market.html">Market Linkage</a></li>
+        <li class="nav-item"><a class="nav-link" href="finance.html">Finance</a></li>
+        <li class="nav-item"><a class="nav-link" href="insurance.html">Insurance</a></li>
+        <li class="nav-item"><a class="nav-link" href="loan.html">Loan</a></li>
+        <li class="nav-item"><a class="nav-link" href="subcidy.html">Subsidy</a></li>
+        <li class="nav-item"><a class="nav-link" href="Login.html">Login</a></li>
+        <li class="nav-item"><a class="nav-link" href="SignUp.html">Signup</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <h1 class="display-5 fw-bold">Modern Equipment for Smarter Farming</h1>
+      <p class="lead">Browse, rent, or buy farm equipment to boost your productivity</p>
+    </div>
+  </section>
+
+  <!-- Categories -->
+  <section class="container py-5">
+    <h2 class="text-center mb-4 text-success">Equipment Categories</h2>
+    <div class="row text-center">
+      <div class="col-md-3 mb-4">
+        <div class="category-icon">
+          <i class="bi bi-truck"></i>
+        </div>
+        <h5>Tractors</h5>
+      </div>
+      <div class="col-md-3 mb-4">
+        <div class="category-icon">
+          <i class="bi bi-gear"></i>
+        </div>
+        <h5>Harvesters</h5>
+      </div>
+      <div class="col-md-3 mb-4">
+        <div class="category-icon">
+          <i class="bi bi-droplet"></i>
+        </div>
+        <h5>Irrigation Tools</h5>
+      </div>
+      <div class="col-md-3 mb-4">
+        <div class="category-icon">
+          <i class="bi bi-wrench"></i>
+        </div>
+        <h5>Soil Prep Tools</h5>
+      </div>
+    </div>
+  </section>
+
+  <!-- Equipment Cards -->
+  <section class="container pb-5">
+    <h2 class="text-center mb-4 text-success">Available Equipment</h2>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card equipment-card h-100 shadow-sm">
+          <img src="./assests/tractor.jpg" class="card-img-top" alt="Tractor">
+          <div class="card-body">
+            <h5 class="card-title">Powerful Tractor</h5>
+            <p class="card-text">High-performance tractors for ploughing, tilling, and hauling.</p>
+            <a href="#" class="btn btn-success w-100">Request Quote</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card equipment-card h-100 shadow-sm">
+          <img src="./assests/harvester.jpg" class="card-img-top" alt="Harvester">
+          <div class="card-body">
+            <h5 class="card-title">Combine Harvester</h5>
+            <p class="card-text">Efficient harvesting for wheat, rice, and other crops.</p>
+            <a href="#" class="btn btn-success w-100">Request Quote</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card equipment-card h-100 shadow-sm">
+          <img src="./assests/irrigation.jpg" class="card-img-top" alt="Irrigation">
+          <div class="card-body">
+            <h5 class="card-title">Irrigation Pump</h5>
+            <p class="card-text">Reliable water supply system for your fields.</p>
+            <a href="#" class="btn btn-success w-100">Request Quote</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Subsidy Info Section -->
+  <section class="subsidy-section text-center">
+    <div class="container">
+      <h2 class="text-success mb-3">Government Subsidies</h2>
+      <p class="mb-4">Get up to 50% subsidy on farm equipment purchases under various government schemes.</p>
+      <a href="#" class="btn btn-success">View Govt. Schemes</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-success text-white text-center py-3">
+    <p class="mb-0">&copy; 2025 KrishiSarthi Platform. All rights reserved.</p>
+  </footer>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Bootstrap Icons (for category icons) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+</body>
+</html>
