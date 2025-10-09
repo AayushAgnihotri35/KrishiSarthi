@@ -5,128 +5,686 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Signup - KrishiSarthi</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="style.css"> <!-- optional for shared styling -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: url("assests/farm-hero.jpg");
+      background-size: cover;
+      position: relative;
+      overflow-x: hidden;
+      padding: 20px 0;
+    }
+
+    /* Animated Background */
+    .bg-animation {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .bg-animation span {
+      position: absolute;
+      display: block;
+      width: 20px;
+      height: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      animation: move 25s infinite;
+      bottom: -150px;
+      border-radius: 50%;
+    }
+
+    .bg-animation span:nth-child(1) {
+      left: 25%;
+      width: 80px;
+      height: 80px;
+      animation-delay: 0s;
+    }
+
+    .bg-animation span:nth-child(2) {
+      left: 10%;
+      width: 20px;
+      height: 20px;
+      animation-delay: 2s;
+      animation-duration: 12s;
+    }
+
+    .bg-animation span:nth-child(3) {
+      left: 70%;
+      width: 20px;
+      height: 20px;
+      animation-delay: 4s;
+    }
+
+    .bg-animation span:nth-child(4) {
+      left: 40%;
+      width: 60px;
+      height: 60px;
+      animation-delay: 0s;
+      animation-duration: 18s;
+    }
+
+    .bg-animation span:nth-child(5) {
+      left: 65%;
+      width: 20px;
+      height: 20px;
+      animation-delay: 0s;
+    }
+
+    .bg-animation span:nth-child(6) {
+      left: 75%;
+      width: 110px;
+      height: 110px;
+      animation-delay: 3s;
+    }
+
+    .bg-animation span:nth-child(7) {
+      left: 35%;
+      width: 150px;
+      height: 150px;
+      animation-delay: 7s;
+    }
+
+    .bg-animation span:nth-child(8) {
+      left: 50%;
+      width: 25px;
+      height: 25px;
+      animation-delay: 15s;
+      animation-duration: 45s;
+    }
+
+    .bg-animation span:nth-child(9) {
+      left: 20%;
+      width: 15px;
+      height: 15px;
+      animation-delay: 2s;
+      animation-duration: 35s;
+    }
+
+    .bg-animation span:nth-child(10) {
+      left: 85%;
+      width: 150px;
+      height: 150px;
+      animation-delay: 0s;
+      animation-duration: 11s;
+    }
+
+    @keyframes move {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-1000px) rotate(720deg);
+        opacity: 0;
+      }
+    }
+
+    /* Signup Container */
+    .signup-container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 500px;
+      padding: 20px;
+      animation: slideIn 0.8s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .signup-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 40px 40px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .logo-container {
+      text-align: center;
+      margin-bottom: 30px;
+      animation: fadeIn 1s ease-out 0.3s both;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    .logo-icon {
+      width: 70px;
+      height: 70px;
+      background: url("./assests/logo.jpg");
+      background-size: cover  ;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 15px;
+      font-size: 35px;
+      color: white;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+    }
+
+    .signup-card h2 {
+      color: #333;
+      font-weight: 700;
+      margin-bottom: 8px;
+      font-size: 26px;
+    }
+
+    .signup-card p {
+      color: #666;
+      margin-bottom: 25px;
+      font-size: 14px;
+    }
+
+    .input-group-custom {
+      position: relative;
+      margin-bottom: 20px;
+      animation: slideRight 0.8s ease-out;
+    }
+
+    @keyframes slideRight {
+      from {
+        opacity: 0;
+        transform: translateX(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .input-group-custom:nth-child(2) {
+      animation-delay: 0.1s;
+    }
+
+    .input-group-custom:nth-child(3) {
+      animation-delay: 0.2s;
+    }
+
+    .input-group-custom:nth-child(4) {
+      animation-delay: 0.3s;
+    }
+
+    .input-group-custom:nth-child(5) {
+      animation-delay: 0.4s;
+    }
+
+    .input-group-custom:nth-child(6) {
+      animation-delay: 0.5s;
+    }
+
+    .input-group-custom label {
+      display: block;
+      margin-bottom: 6px;
+      color: #555;
+      font-weight: 500;
+      font-size: 13px;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #999;
+      transition: color 0.3s;
+    }
+
+    .input-group-custom input {
+      width: 100%;
+      padding: 12px 15px 12px 45px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      background: white;
+    }
+
+    .input-group-custom input:focus {
+      outline: none;
+      border-color: #11998e;
+      box-shadow: 0 0 0 4px rgba(17, 153, 142, 0.1);
+    }
+
+    .input-group-custom input:focus + .input-icon {
+      color: #11998e;
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: #999;
+      transition: color 0.3s;
+    }
+
+    .password-toggle:hover {
+      color: #11998e;
+    }
+
+    .password-strength {
+      margin-top: 5px;
+      font-size: 12px;
+      display: none;
+    }
+
+    .password-strength.show {
+      display: block;
+    }
+
+    .password-strength.weak {
+      color: #dc3545;
+    }
+
+    .password-strength.medium {
+      color: #ffc107;
+    }
+
+    .password-strength.strong {
+      color: #28a745;
+    }
+
+    .btn-signup {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-signup::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn-signup:hover::before {
+      left: 100%;
+    }
+
+    .btn-signup:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(17, 153, 142, 0.4);
+    }
+
+    .btn-signup:active {
+      transform: translateY(0);
+    }
+
+    .divider {
+      text-align: center;
+      margin: 20px 0;
+      position: relative;
+    }
+
+    .divider::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      width: 100%;
+      height: 1px;
+      background: #e0e0e0;
+    }
+
+    .divider span {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 0 15px;
+      position: relative;
+      color: #999;
+      font-size: 13px;
+    }
+
+    .links {
+      text-align: center;
+      margin-top: 15px;
+    }
+
+    .links a {
+      color: #11998e;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s;
+      font-size: 14px;
+    }
+
+    .links a:hover {
+      color: #38ef7d;
+      text-decoration: underline;
+    }
+
+    #signupMessage {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      font-size: 14px;
+      animation: fadeIn 0.5s;
+      display: none;
+    }
+
+    .terms {
+      font-size: 12px;
+      color: #666;
+      margin-top: 15px;
+      text-align: center;
+    }
+
+    .terms a {
+      color: #11998e;
+      text-decoration: none;
+    }
+
+    .terms a:hover {
+      text-decoration: underline;
+    }
+
+    /* Loading Animation */
+    .btn-signup.loading {
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
+    .btn-signup.loading::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      top: 50%;
+      left: 50%;
+      margin-left: -10px;
+      margin-top: -10px;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
 </head>
-<body class="bg-light">
+<body>
+  <!-- Animated Background -->
+  <!-- <div class="bg-animation">
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+  </div> -->
 
-<!-- Master Navbar (Use on all pages) -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-success">
-  <div class="container-fluid">
-    <!-- Brand -->
-    <a class="navbar-brand" href="index.html">
-      <img src="./assests//logo.jpg" alt="Logo" width="40" height="40" class="me-2">
-      <strong>KrishiSarthi</strong>
-    </a>
+  <!-- Signup Container -->
+  <div class="signup-container">
+    <div class="signup-card">
+      <!-- Logo -->
+      <div class="logo-container">
+        <div class="logo-icon">
+        </div>
+        <h2>Create Account</h2>
+        <p>Join KrishiSarthi today and grow your farm!</p>
+      </div>
 
-    <!-- Toggler (for mobile view) -->
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+      <!-- Message Display -->
+      <div id="signupMessage"></div>
 
-    <!-- Navbar Links -->
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav ms-auto">
-        <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="Equipment.html">Equipment</a></li>
-        <li class="nav-item"><a class="nav-link" href="weather.html">Weather & Advisory</a></li>
-        <li class="nav-item"><a class="nav-link" href="market.html">Market Linkage</a></li>
-        <li class="nav-item"><a class="nav-link" href="finance.html">Finance</a></li>
-        <li class="nav-item"><a class="nav-link" href="insurance.html">Insurance</a></li>
-        <li class="nav-item"><a class="nav-link" href="loan.html">Loan</a></li>
-        <li class="nav-item"><a class="nav-link" href="subcidy.html">Subsidy</a></li>
-        <li class="nav-item"><a class="nav-link" href="Login.html">Login</a></li>
-        <li class="nav-item"><a class="nav-link" href="SignUp.html">Signup</a></li>
-      </ul>
-    </div>
-  </div>
-</nav>
-
-
-  <!-- Signup Form Section -->
-  <div class="container d-flex justify-content-center align-items-center" style="min-height: 90vh;">
-    <div class="card shadow p-4" style="width: 100%; max-width: 400px;">
-      <h2 class="text-center text-success mb-4">Signup</h2>
-      <div id="signupMessage" class="mb-3 text-center"></div>
+      <!-- Signup Form -->
       <form id="signupForm">
-        <div class="mb-3">
-          <label for="fullname" class="form-label">Full Name</label>
-          <input type="text" class="form-control" id="fullname" name="fullname" placeholder="Enter full name" required>
+        <!-- Full Name Field -->
+        <div class="input-group-custom">
+          <label for="fullname">Full Name</label>
+          <div class="input-wrapper">
+            <i class="fas fa-user input-icon"></i>
+            <input type="text" id="fullname" name="fullname" placeholder="Enter your full name" required>
+          </div>
         </div>
-        <div class="mb-3">
-          <label for="email" class="form-label">Email</label>
-          <input type="email" class="form-control" id="email" name="email" placeholder="Enter email" required>
+
+        <!-- Email Field -->
+        <div class="input-group-custom">
+          <label for="email">Email Address</label>
+          <div class="input-wrapper">
+            <i class="fas fa-envelope input-icon"></i>
+            <input type="email" id="email" name="email" placeholder="Enter your email" required>
+          </div>
         </div>
-        <div class="mb-3">
-          <label for="username" class="form-label">Username</label>
-          <input type="text" class="form-control" id="username" name="username" placeholder="Choose username" required>
+
+        <!-- Username Field -->
+        <div class="input-group-custom">
+          <label for="username">Username</label>
+          <div class="input-wrapper">
+            <i class="fas fa-user-circle input-icon"></i>
+            <input type="text" id="username" name="username" placeholder="Choose a username" required>
+          </div>
         </div>
-        <div class="mb-3">
-          <label for="password" class="form-label">Password</label>
-          <input type="password" class="form-control" id="password" name="password" placeholder="Create password" required>
+
+        <!-- Password Field -->
+        <div class="input-group-custom">
+          <label for="password">Password</label>
+          <div class="input-wrapper">
+            <i class="fas fa-lock input-icon"></i>
+            <input type="password" id="password" name="password" placeholder="Create a password" required>
+            <i class="fas fa-eye password-toggle" id="togglePassword"></i>
+          </div>
+          <div class="password-strength" id="passwordStrength"></div>
         </div>
-        <div class="mb-3">
-          <label for="confirmPassword" class="form-label">Confirm Password</label>
-          <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" placeholder="Confirm password" required>
+
+        <!-- Confirm Password Field -->
+        <div class="input-group-custom">
+          <label for="confirmPassword">Confirm Password</label>
+          <div class="input-wrapper">
+            <i class="fas fa-lock input-icon"></i>
+            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" required>
+            <i class="fas fa-eye password-toggle" id="toggleConfirmPassword"></i>
+          </div>
         </div>
-        <button type="submit" class="btn btn-success w-100">Signup</button>
+
+        <!-- Terms & Conditions -->
+        <div class="terms">
+          By signing up, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+        </div>
+
+        <!-- Signup Button -->
+        <button type="submit" class="btn-signup" id="signupBtn">Create Account</button>
       </form>
-      <p class="text-center mt-3 mb-0">
-        Already have an account? 
-        <a href="login.html" class="text-success text-decoration-none">Login here</a>
-      </p>
-      <p class="text-center mt-2 mb-0">
-        <a href="index.html" class="text-success text-decoration-none">← Back to Home</a>
-      </p>
+
+      <!-- Divider -->
+      <div class="divider">
+        <span>OR</span>
+      </div>
+
+      <!-- Links -->
+      <div class="links">
+        <p>Already have an account? <a href="Login.html">Login here</a></p>
+      </div>
     </div>
   </div>
 
-  <!-- Optional JS logic -->
-<script>
-const signupForm = document.getElementById('signupForm');
-const signupMessage = document.getElementById('signupMessage');
+  <script>
+    // Password Toggle for Password field
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordField = document.getElementById('password');
 
-signupForm.addEventListener('submit', async function(e) {
-  e.preventDefault();
-
-  signupMessage.textContent = ''; // Clear previous message
-
-  const fullname = document.getElementById('fullname').value;
-  const username = document.getElementById('username').value;
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  const confirmPassword = document.getElementById('confirmPassword').value;
-
-  if (password !== confirmPassword) {
-    signupMessage.textContent = 'Passwords do not match!';
-    signupMessage.className = 'mb-3 text-center text-danger';
-    return;
-  }
-
-  try {
-    const res = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fullname, username, email, password })
+    togglePassword.addEventListener('click', function() {
+      const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordField.setAttribute('type', type);
+      this.classList.toggle('fa-eye');
+      this.classList.toggle('fa-eye-slash');
     });
 
-    const data = await res.json();
-    if (res.ok) {
-      signupMessage.textContent = data.message;
-      signupMessage.className = 'mb-3 text-center text-success';
-      setTimeout(() => window.location.href = 'Login.html', 1500);
-    } else {
-      signupMessage.textContent = data.message || 'Signup failed';
-      signupMessage.className = 'mb-3 text-center text-danger';
-    }
-  } catch (err) {
-    console.error(err);
-    signupMessage.textContent = 'Error connecting to server';
-    signupMessage.className = 'mb-3 text-center text-danger';
-  }
-});
-</script>
+    // Password Toggle for Confirm Password field
+    const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
+    const confirmPasswordField = document.getElementById('confirmPassword');
 
+    toggleConfirmPassword.addEventListener('click', function() {
+      const type = confirmPasswordField.getAttribute('type') === 'password' ? 'text' : 'password';
+      confirmPasswordField.setAttribute('type', type);
+      this.classList.toggle('fa-eye');
+      this.classList.toggle('fa-eye-slash');
+    });
 
+    // Password Strength Indicator
+    const passwordStrength = document.getElementById('passwordStrength');
+    
+    passwordField.addEventListener('input', function() {
+      const password = this.value;
+      let strength = 0;
+
+      if (password.length >= 8) strength++;
+      if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+      if (/[0-9]/.test(password)) strength++;
+      if (/[^a-zA-Z0-9]/.test(password)) strength++;
+
+      passwordStrength.classList.remove('weak', 'medium', 'strong');
+      
+      if (password.length === 0) {
+        passwordStrength.classList.remove('show');
+      } else {
+        passwordStrength.classList.add('show');
+        if (strength <= 1) {
+          passwordStrength.textContent = 'Weak password';
+          passwordStrength.classList.add('weak');
+        } else if (strength === 2 || strength === 3) {
+          passwordStrength.textContent = 'Medium password';
+          passwordStrength.classList.add('medium');
+        } else {
+          passwordStrength.textContent = 'Strong password';
+          passwordStrength.classList.add('strong');
+        }
+      }
+    });
+
+    // Signup Form Handler
+    const signupForm = document.getElementById('signupForm');
+    const signupMessage = document.getElementById('signupMessage');
+    const signupBtn = document.getElementById('signupBtn');
+
+    signupForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      signupMessage.textContent = '';
+      signupMessage.style.display = 'none';
+
+      const fullname = document.getElementById('fullname').value;
+      const username = document.getElementById('username').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+
+      if (password !== confirmPassword) {
+        signupMessage.textContent = 'Passwords do not match!';
+        signupMessage.style.display = 'block';
+        signupMessage.style.backgroundColor = '#f8d7da';
+        signupMessage.style.color = '#721c24';
+        signupMessage.style.border = '1px solid #f5c6cb';
+        return;
+      }
+
+      signupBtn.classList.add('loading');
+      signupBtn.textContent = '';
+
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fullname, username, email, password })
+        });
+
+        const data = await res.json();
+        
+        signupBtn.classList.remove('loading');
+        signupBtn.textContent = 'Create Account';
+
+        if (res.ok) {
+          signupMessage.textContent = data.message || 'Account created successfully!';
+          signupMessage.style.display = 'block';
+          signupMessage.style.backgroundColor = '#d4edda';
+          signupMessage.style.color = '#155724';
+          signupMessage.style.border = '1px solid #c3e6cb';
+          
+          setTimeout(() => window.location.href = 'Login.html', 1500);
+        } else {
+          signupMessage.textContent = data.message || 'Signup failed';
+          signupMessage.style.display = 'block';
+          signupMessage.style.backgroundColor = '#f8d7da';
+          signupMessage.style.color = '#721c24';
+          signupMessage.style.border = '1px solid #f5c6cb';
+        }
+      } catch (err) {
+        console.error(err);
+        signupBtn.classList.remove('loading');
+        signupBtn.textContent = 'Create Account';
+        signupMessage.textContent = 'Error connecting to server';
+        signupMessage.style.display = 'block';
+        signupMessage.style.backgroundColor = '#f8d7da';
+        signupMessage.style.color = '#721c24';
+        signupMessage.style.border = '1px solid #f5c6cb';
+      }
+    });
+  </script>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

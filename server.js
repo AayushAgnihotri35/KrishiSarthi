@@ -3,12 +3,10 @@ require('dotenv').config();
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
-const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
-
-// Load environment variables
-dotenv.config();
+const userRoutes = require("./routes/userRoutes");
+const quotationRoutes = require("./routes/quotations"); // Add this line
 
 // Connect DB
 connectDB(process.env.MONGO_URI);
@@ -22,6 +20,18 @@ app.use(cors());
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/user", userRoutes);
+app.use("/api/quotations", quotationRoutes); // Add this line
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({
+    success: true,
+    message: 'KrishiSarthi API is running',
+    timestamp: new Date().toISOString(),
+    database: require('mongoose').connection.readyState === 1 ? 'Connected' : 'Disconnected'
+  });
+});
 
 // Serve static frontend
 app.use(express.static(path.join(__dirname, 'frontend')));
@@ -30,4 +40,14 @@ app.get('/', (req, res) => {
 });
 
 // Start server
-app.listen(PORT,() => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`🚀 KrishiSarthi Server running on port ${PORT}`);
+  console.log(`📍 API endpoint: http://localhost:${PORT}/api`);
+  console.log(`🌐 Frontend: http://localhost:${PORT}`);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+  console.error('Unhandled Promise Rejection:', err);
+  process.exit(1);
+});

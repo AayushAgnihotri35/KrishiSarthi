@@ -5,104 +5,437 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login - KrishiSarthi</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="style.css"> <!-- optional if you want same style -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: url("assests/farm-hero.jpg");
+      position: relative;
+      overflow: hidden;
+      background-size: cover;
+    }
+
+    .login-container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 450px;
+      padding: 20px;
+      animation: slideIn 0.8s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .login-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 50px 40px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .logo-container {
+      text-align: center;
+      margin-bottom: 30px;
+      animation: fadeIn 1s ease-out 0.3s both;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    .logo-icon {
+      width: 70px;
+      height: 70px;
+      background: url("./assests/logo.jpg");
+      background-size: cover;
+      border-radius: 50%;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      background-size: cover;
+    }
+
+    .login-card h2 {
+      color: #333;
+      font-weight: 700;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+
+    .login-card p {
+      color: #666;
+      margin-bottom: 30px;
+    }
+
+    .input-group-custom {
+      position: relative;
+      margin-bottom: 25px;
+      animation: slideRight 0.8s ease-out;
+    }
+
+    @keyframes slideRight {
+      from {
+        opacity: 0;
+        transform: translateX(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .input-group-custom:nth-child(2) {
+      animation-delay: 0.1s;
+    }
+
+    .input-group-custom:nth-child(3) {
+      animation-delay: 0.2s;
+    }
+
+    .input-group-custom label {
+      display: block;
+      margin-bottom: 8px;
+      color: #555;
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #999;
+      transition: color 0.3s;
+    }
+
+    .input-group-custom input {
+      width: 100%;
+      padding: 14px 15px 14px 45px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 15px;
+      transition: all 0.3s ease;
+      background: white;
+    }
+
+    .input-group-custom input:focus {
+      outline: none;
+      border-color: #11998e;
+      box-shadow: 0 0 0 4px rgba(17, 153, 142, 0.1);
+    }
+
+    .input-group-custom input:focus + .input-icon {
+      color: #11998e;
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: #999;
+      transition: color 0.3s;
+    }
+
+    .password-toggle:hover {
+      color: #11998e;
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-login::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn-login:hover::before {
+      left: 100%;
+    }
+
+    .btn-login:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(17, 153, 142, 0.4);
+    }
+
+    .btn-login:active {
+      transform: translateY(0);
+    }
+
+    .divider {
+      text-align: center;
+      margin: 25px 0;
+      position: relative;
+    }
+
+    .divider::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      width: 100%;
+      height: 1px;
+      background: #e0e0e0;
+    }
+
+    .divider span {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 0 15px;
+      position: relative;
+      color: #999;
+      font-size: 14px;
+    }
+
+    .links {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .links a {
+      color: #11998e;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+
+    .links a:hover {
+      color: #38ef7d;
+      text-decoration: underline;
+    }
+
+    #loginMessage {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      animation: fadeIn 0.5s;
+    }
+
+    .remember-forgot {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+
+    .remember-forgot label {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      color: #555;
+    }
+
+    .remember-forgot input[type="checkbox"] {
+      margin-right: 8px;
+      cursor: pointer;
+    }
+
+    .remember-forgot a {
+      color: #11998e;
+      text-decoration: none;
+    }
+
+    .remember-forgot a:hover {
+      text-decoration: underline;
+    }
+
+    .btn-login.loading {
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
+    .btn-login.loading::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      top: 50%;
+      left: 50%;
+      margin-left: -10px;
+      margin-top: -10px;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
 </head>
-<body class="bg-light">
+<body>
+  <div class="login-container">
+    <div class="login-card">
+      <div class="logo-container">
+        <div class="logo-icon"></div>
+        <h2>Welcome Back!</h2>
+        <p>Login to your KrishiSarthi account</p>
+      </div>
 
-<!-- Master Navbar (Use on all pages) -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-success">
-  <div class="container-fluid">
-    <!-- Brand -->
-    <a class="navbar-brand" href="index.html">
-      <img src="./assests//logo.jpg" alt="Logo" width="40" height="40" class="me-2">
-      <strong>KrishiSarthi</strong>
-    </a>
+      <div id="loginMessage"></div>
 
-    <!-- Toggler (for mobile view) -->
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <!-- Navbar Links -->
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav ms-auto">
-        <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="Equipment.html">Equipment</a></li>
-        <li class="nav-item"><a class="nav-link" href="weather.html">Weather & Advisory</a></li>
-        <li class="nav-item"><a class="nav-link" href="market.html">Market Linkage</a></li>
-        <li class="nav-item"><a class="nav-link" href="finance.html">Finance</a></li>
-        <li class="nav-item"><a class="nav-link" href="insurance.html">Insurance</a></li>
-        <li class="nav-item"><a class="nav-link" href="loan.html">Loan</a></li>
-        <li class="nav-item"><a class="nav-link" href="subcidy.html">Subsidy</a></li>
-        <li class="nav-item"><a class="nav-link" href="Login.html">Login</a></li>
-        <li class="nav-item"><a class="nav-link" href="SignUp.html">Signup</a></li>
-      </ul>
-    </div>
-  </div>
-</nav>
-
-
-  <!-- Login Form Section -->
-  <div class="container d-flex justify-content-center align-items-center" style="min-height: 90vh;">
-    <div class="card shadow p-4" style="width: 100%; max-width: 400px;">
-      <h2 class="text-center text-success mb-4">Login</h2>
-        <div id="loginMessage" class="mb-3 text-center"></div>
       <form id="loginForm">
-        <div class="mb-3">
-          <label for="username" class="form-label">Username</label>
-          <input type="text" class="form-control" id="username" name="username" placeholder="Enter username" required>
+        <div class="input-group-custom">
+          <label for="username">Username</label>
+          <div class="input-wrapper">
+            <i class="fas fa-user input-icon"></i>
+            <input type="text" id="username" name="username" placeholder="Enter your username" required>
+          </div>
         </div>
-        <div class="mb-3">
-          <label for="password" class="form-label">Password</label>
-          <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" required>
+
+        <div class="input-group-custom">
+          <label for="password">Password</label>
+          <div class="input-wrapper">
+            <i class="fas fa-lock input-icon"></i>
+            <input type="password" id="password" name="password" placeholder="Enter your password" required>
+            <i class="fas fa-eye password-toggle" id="togglePassword"></i>
+          </div>
         </div>
-        <button type="submit" class="btn btn-success w-100">Login</button>
+
+        <div class="remember-forgot">
+          <label>
+            <input type="checkbox" id="rememberMe">
+            Remember me
+          </label>
+          <a href="#">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="btn-login" id="loginBtn">Login</button>
       </form>
-      <p class="text-center mt-3 mb-0">
-        <a href="index.html" class="text-success text-decoration-none">← Back to Home</a>
-      </p>
+
+      <div class="divider">
+        <span>OR</span>
+      </div>
+
+      <div class="links">
+        <p>Don't have an account? <a href="SignUp.html">Sign Up</a></p>
+      </div>
     </div>
   </div>
 
-  <!-- Optional JS logic -->
-<script>
-const loginForm = document.getElementById('loginForm');
-const loginMessage = document.getElementById('loginMessage');
+  <script>
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordField = document.getElementById('password');
 
-loginForm.addEventListener('submit', async function(e) {
-  e.preventDefault();
-
-  loginMessage.textContent = ''; // Clear previous message
-
-  const username = document.getElementById('username').value;
-  const password = document.getElementById('password').value;
-
-  try {
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
+    togglePassword.addEventListener('click', function() {
+      const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordField.setAttribute('type', type);
+      this.classList.toggle('fa-eye');
+      this.classList.toggle('fa-eye-slash');
     });
 
-    const data = await res.json();
-    if (res.ok) {
-      loginMessage.textContent = data.message;
-      loginMessage.className = 'mb-3 text-center text-success';
-      localStorage.setItem('token', data.token);
-      setTimeout(() => window.location.href = 'index.html', 1500);
-    } else {
-      loginMessage.textContent = data.message || 'Login failed';
-      loginMessage.className = 'mb-3 text-center text-danger';
-    }
-  } catch (err) {
-    console.error(err);
-    loginMessage.textContent = 'Error connecting to server';
-    loginMessage.className = 'mb-3 text-center text-danger';
-  }
-});
-</script>
+    const loginForm = document.getElementById('loginForm');
+    const loginMessage = document.getElementById('loginMessage');
+    const loginBtn = document.getElementById('loginBtn');
 
+    loginForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
 
+      loginMessage.textContent = '';
+      loginMessage.style.display = 'none';
+      loginBtn.classList.add('loading');
+      loginBtn.textContent = '';
+
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await res.json();
+        
+        loginBtn.classList.remove('loading');
+        loginBtn.textContent = 'Login';
+
+        if (res.ok) {
+          loginMessage.textContent = data.message || 'Login successful!';
+          loginMessage.style.display = 'block';
+          loginMessage.style.backgroundColor = '#d4edda';
+          loginMessage.style.color = '#155724';
+          loginMessage.style.border = '1px solid #c3e6cb';
+          
+          // Store token and user info in localStorage
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('username', data.user.username);
+          localStorage.setItem('fullname', data.user.fullname);
+          
+          setTimeout(() => window.location.href = 'index.html', 1500);
+        } else {
+          loginMessage.textContent = data.message || 'Login failed';
+          loginMessage.style.display = 'block';
+          loginMessage.style.backgroundColor = '#f8d7da';
+          loginMessage.style.color = '#721c24';
+          loginMessage.style.border = '1px solid #f5c6cb';
+        }
+      } catch (err) {
+        console.error(err);
+        loginBtn.classList.remove('loading');
+        loginBtn.textContent = 'Login';
+        loginMessage.textContent = 'Error connecting to server';
+        loginMessage.style.display = 'block';
+        loginMessage.style.backgroundColor = '#f8d7da';
+        loginMessage.style.color = '#721c24';
+        loginMessage.style.border = '1px solid #f5c6cb';
+      }
+    });
+  </script>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

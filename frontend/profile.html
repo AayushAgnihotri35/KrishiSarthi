@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile - KrishiSarthi</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .profile-dropdown .dropdown-toggle::after {
+      display: none;
+    }
+    
+    .profile-icon {
+      width: 35px;
+      height: 35px;
+      background-color: #fff;
+      color: #198754;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .profile-icon:hover {
+      background-color: #f8f9fa;
+      transform: scale(1.05);
+    }
+    
+    .dropdown-menu {
+      min-width: 200px;
+    }
+    
+    .dropdown-item i {
+      width: 20px;
+      margin-right: 8px;
+    }
+
+    .profile-header {
+      background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+      color: white;
+      padding: 2rem 0;
+      margin-bottom: 2rem;
+    }
+    
+    .profile-avatar {
+      width: 100px;
+      height: 100px;
+      background: white;
+      color: #198754;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      margin: 0 auto 1rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .info-card {
+      border-left: 4px solid #198754;
+    }
+    
+    .edit-btn {
+      transition: all 0.3s;
+    }
+    
+    .edit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body class="bg-light">
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-success">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="index.html">
+      <img src="./assests/logo.jpg" alt="Logo" width="40" height="40">
+      <strong>KrishiSarthi</strong>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="Equipment.html">Equipment</a></li>
+        <li class="nav-item"><a class="nav-link" href="weather.html">Weather & Advisory</a></li>
+        <li class="nav-item"><a class="nav-link" href="market.html">Market Linkage</a></li>
+        <li class="nav-item"><a class="nav-link" href="finance.html">Finance</a></li>
+        <li class="nav-item"><a class="nav-link" href="insurance.html">Insurance</a></li>
+        <li class="nav-item"><a class="nav-link" href="loan.html">Loan</a></li>
+        <li class="nav-item"><a class="nav-link" href="subcidy.html">Subsidy</a></li>
+        
+        <li class="nav-item dropdown profile-dropdown ms-2">
+          <a class="nav-link dropdown-toggle p-0" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <div class="profile-icon">
+              <i class="fas fa-user"></i>
+            </div>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+            <li><a class="dropdown-item" href="profile.html"><i class="fas fa-user-circle"></i> My Profile</a></li>
+            <li><a class="dropdown-item" href="orders.html"><i class="fas fa-shopping-cart"></i> My Orders</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="#" id="navLogoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Profile Header -->
+<div class="profile-header">
+  <div class="container text-center">
+    <div class="profile-avatar">
+      <i class="fas fa-user"></i>
+    </div>
+    <h2 id="profileName">Loading...</h2>
+    <p id="profileUsername" class="mb-0">@username</p>
+  </div>
+</div>
+
+<!-- Profile Content -->
+<div class="container pb-5">
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-3 mb-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title text-success">Profile Menu</h5>
+          <div class="list-group">
+            <a href="profile.html" class="list-group-item list-group-item-action active">
+              <i class="fas fa-user"></i> My Profile
+            </a>
+            <a href="orders.html" class="list-group-item list-group-item-action">
+              <i class="fas fa-shopping-cart"></i> My Orders
+            </a>
+            <a href="#" id="sidebarLogout" class="list-group-item list-group-item-action text-danger">
+              <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="col-md-9">
+      <!-- Loading Spinner -->
+      <div id="loadingSpinner" class="text-center py-5">
+        <div class="spinner-border text-success" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Fetching your profile...</p>
+      </div>
+
+      <!-- Error Message -->
+      <div id="errorMessage" class="alert alert-danger d-none" role="alert">
+        <i class="fas fa-exclamation-triangle"></i> <span id="errorText"></span>
+      </div>
+
+      <!-- Profile Information -->
+      <div id="profileContent" class="d-none">
+        <div class="card info-card mb-4">
+          <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-info-circle"></i> Personal Information</h5>
+          </div>
+          <div class="card-body">
+            <div class="row mb-3">
+              <label class="col-sm-3 col-form-label fw-bold">Full Name:</label>
+              <div class="col-sm-9">
+                <p class="form-control-plaintext" id="fullname">-</p>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-sm-3 col-form-label fw-bold">Username:</label>
+              <div class="col-sm-9">
+                <p class="form-control-plaintext" id="username">-</p>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label class="col-sm-3 col-form-label fw-bold">Email:</label>
+              <div class="col-sm-9">
+                <p class="form-control-plaintext" id="email">-</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Account Info -->
+        <div class="card info-card">
+          <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="fas fa-chart-line"></i> Account Information</h5>
+          </div>
+          <div class="card-body">
+            <div class="row text-center">
+              <div class="col-md-6">
+                <h3 class="text-success">Active</h3>
+                <p class="text-muted">Account Status</p>
+              </div>
+              <div class="col-md-6">
+                <h3 class="text-success" id="memberSince">2025</h3>
+                <p class="text-muted">Member Since</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="bg-success text-white text-center py-3 mt-5">
+  <p class="mb-0">&copy; 2025 KrishiSarthi Platform. All rights reserved.</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Fetch profile data on page load
+document.addEventListener('DOMContentLoaded', async () => {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    window.location.href = 'Login.html';
+    return;
+  }
+
+  await fetchProfile(token);
+  setupLogoutHandlers();
+});
+
+// Fetch profile from MongoDB using your backend
+async function fetchProfile(token) {
+  const loadingSpinner = document.getElementById('loadingSpinner');
+  const errorMessage = document.getElementById('errorMessage');
+  const profileContent = document.getElementById('profileContent');
+
+  try {
+    const response = await fetch('/api/auth/profile', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      // Update header
+      document.getElementById('profileName').textContent = data.fullname || 'User';
+      document.getElementById('profileUsername').textContent = `@${data.username || 'username'}`;
+      
+      // Fill profile fields
+      document.getElementById('fullname').textContent = data.fullname || '-';
+      document.getElementById('username').textContent = data.username || '-';
+      document.getElementById('email').textContent = data.email || '-';
+      
+      // Set member since year
+      if (data.createdAt) {
+        const year = new Date(data.createdAt).getFullYear();
+        document.getElementById('memberSince').textContent = year;
+      }
+      
+      // Show profile content
+      loadingSpinner.classList.add('d-none');
+      profileContent.classList.remove('d-none');
+    } else {
+      throw new Error(data.message || 'Failed to fetch profile');
+    }
+  } catch (error) {
+    console.error('Error fetching profile:', error);
+    loadingSpinner.classList.add('d-none');
+    errorMessage.classList.remove('d-none');
+    document.getElementById('errorText').textContent = error.message || 'Unable to load profile. Please try again.';
+  }
+}
+
+// Setup logout handlers
+function setupLogoutHandlers() {
+  const logoutButtons = [
+    document.getElementById('navLogoutBtn'),
+    document.getElementById('sidebarLogout')
+  ];
+
+  logoutButtons.forEach(btn => {
+    if (btn) {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (confirm('Are you sure you want to logout?')) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('username');
+          localStorage.removeItem('fullname');
+          window.location.href = 'Login.html';
+        }
+      });
+    }
+  });
+}
+</script>
+
+</body>
+</html>

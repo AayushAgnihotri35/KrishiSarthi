@@ -57,5 +57,42 @@ async function fetchWeatherData() {
   }
 }
 
+// ----------------------
+// LOGIN/LOGOUT HANDLING
+// ----------------------
+document.addEventListener('DOMContentLoaded', () => {
+  const token = localStorage.getItem('token');
+  const loginLink = document.getElementById('loginLink');
+  const signupLink = document.getElementById('signupLink');
+  const profileLink = document.getElementById('profileLink');
+  const logoutLink = document.getElementById('logoutLink');
+
+    if (token) {
+    // Logged in
+    if (loginLink) loginLink.style.display = "none";
+    if (signupLink) signupLink.style.display = "none";
+    if (profileLink) profileLink.style.display = "block";
+  } else {
+    // Not logged in
+    if (loginLink) loginLink.style.display = "block";
+    if (signupLink) signupLink.style.display = "block";
+    if (profileLink) profileLink.style.display = "none";
+  }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  const logoutLink = document.getElementById('logoutLink');
+
+  // Logout click handler
+  if (logoutLink) {
+    logoutLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      localStorage.removeItem('token');
+      window.location.href = 'index.html';
+    });
+  }
+});
+
+
 // Call the placeholder function
 fetchWeatherData();

@@ -5,10 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Equipment - KrishiSarthi</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
+  
   <style>
     .hero-section {
-      background: url('./assests/equipment-hero.jpg') center/cover no-repeat;
+      background: url('./assests/farm.jpg') center/cover no-repeat;
       height: 350px;
       position: relative;
       color: #fff;
@@ -54,43 +57,194 @@
       background: #e9f7ef;
       padding: 40px 0;
     }
+
+    .modal-header {
+      background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+      color: white;
+    }
+
+    .quote-type-selector {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .quote-type-btn {
+      flex: 1;
+      padding: 15px;
+      border: 2px solid #198754;
+      background: white;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: center;
+    }
+
+    .quote-type-btn:hover {
+      background: #e9f7ef;
+    }
+
+    .quote-type-btn.active {
+      background: #198754;
+      color: white;
+    }
+
+    .quote-type-btn i {
+      font-size: 24px;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .subsidy-badge {
+      background: #ffc107;
+      color: #000;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+      display: inline-block;
+      margin-top: 10px;
+    }
+
+    .equipment-specs {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .equipment-specs h6 {
+      color: #198754;
+      margin-bottom: 10px;
+    }
+
+    .price-display {
+      background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .price-display h3 {
+      margin: 0;
+      font-size: 32px;
+    }
+
+    .price-display p {
+      margin: 5px 0 0 0;
+      opacity: 0.9;
+    }
+
+    .benefit-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+    }
+
+    .benefit-item i {
+      color: #198754;
+      font-size: 18px;
+    }
+
+    .form-section {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .rental-duration {
+      display: none;
+    }
+
+    .rental-duration.active {
+      display: block;
+    }
+
+    #successMessage {
+      display: none;
+    }
+
+    .success-animation {
+      text-align: center;
+      padding: 40px;
+    }
+
+    .success-animation i {
+      font-size: 64px;
+      color: #198754;
+      animation: scaleIn 0.5s ease-out;
+    }
+
+    @keyframes scaleIn {
+      0% {
+        transform: scale(0);
+      }
+      50% {
+        transform: scale(1.2);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
   </style>
 </head>
 <body class="bg-light">
 
   <!-- Navbar -->
-<!-- Master Navbar (Use on all pages) -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-success">
-  <div class="container-fluid">
-    <!-- Brand -->
-    <a class="navbar-brand" href="index.html">
-      <img src="./assests//logo.jpg" alt="Logo" width="40" height="40" class="me-2">
-      <strong>KrishiSarthi</strong>
-    </a>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="index.html">
+        <img src="./assests/logo.jpg" alt="Logo" width="40" height="40" class="me-2">
+        <strong>KrishiSarthi</strong>
+      </a>
 
-    <!-- Toggler (for mobile view) -->
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
-    <!-- Navbar Links -->
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav ms-auto">
-        <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="Equipment.html">Equipment</a></li>
-        <li class="nav-item"><a class="nav-link" href="weather.html">Weather & Advisory</a></li>
-        <li class="nav-item"><a class="nav-link" href="market.html">Market Linkage</a></li>
-        <li class="nav-item"><a class="nav-link" href="finance.html">Finance</a></li>
-        <li class="nav-item"><a class="nav-link" href="insurance.html">Insurance</a></li>
-        <li class="nav-item"><a class="nav-link" href="loan.html">Loan</a></li>
-        <li class="nav-item"><a class="nav-link" href="subcidy.html">Subsidy</a></li>
-        <li class="nav-item"><a class="nav-link" href="Login.html">Login</a></li>
-        <li class="nav-item"><a class="nav-link" href="SignUp.html">Signup</a></li>
-      </ul>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="Equipment.html">Equipment</a></li>
+          <li class="nav-item"><a class="nav-link" href="weather.html">Weather & Advisory</a></li>
+          <li class="nav-item"><a class="nav-link" href="market.html">Market Linkage</a></li>
+          <li class="nav-item"><a class="nav-link" href="finance.html">Finance</a></li>
+          <li class="nav-item"><a class="nav-link" href="insurance.html">Insurance</a></li>
+          <li class="nav-item"><a class="nav-link" href="loan.html">Loan</a></li>
+          <li class="nav-item"><a class="nav-link" href="subcidy.html">Subsidy</a></li>
+          <li class="nav-item dropdown profile-dropdown ms-2">
+            <a class="nav-link dropdown-toggle p-0" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <div class="profile-icon">
+                <i class="fas fa-user"></i>
+              </div>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+              <li>
+                <a class="dropdown-item" href="profile.html">
+                  <i class="fas fa-user-circle"></i> My Profile
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="orders.html">
+                  <i class="fas fa-shopping-cart"></i> My Orders
+                </a>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <a class="dropdown-item text-danger" href="#" id="logoutBtn">
+                  <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
     </div>
-  </div>
-</nav>
-
+  </nav>
 
   <!-- Hero Section -->
   <section class="hero-section">
@@ -142,7 +296,14 @@
           <div class="card-body">
             <h5 class="card-title">Powerful Tractor</h5>
             <p class="card-text">High-performance tractors for ploughing, tilling, and hauling.</p>
-            <a href="#" class="btn btn-success w-100">Request Quote</a>
+            <button class="btn btn-success w-100 request-quote-btn" 
+                    data-equipment="Powerful Tractor"
+                    data-price="₹8,50,000"
+                    data-rental="₹2,500/day"
+                    data-subsidy="50%"
+                    data-category="Tractor">
+              Request Quote
+            </button>
           </div>
         </div>
       </div>
@@ -153,7 +314,14 @@
           <div class="card-body">
             <h5 class="card-title">Combine Harvester</h5>
             <p class="card-text">Efficient harvesting for wheat, rice, and other crops.</p>
-            <a href="#" class="btn btn-success w-100">Request Quote</a>
+            <button class="btn btn-success w-100 request-quote-btn"
+                    data-equipment="Combine Harvester"
+                    data-price="₹15,00,000"
+                    data-rental="₹5,000/day"
+                    data-subsidy="40%"
+                    data-category="Harvester">
+              Request Quote
+            </button>
           </div>
         </div>
       </div>
@@ -164,7 +332,14 @@
           <div class="card-body">
             <h5 class="card-title">Irrigation Pump</h5>
             <p class="card-text">Reliable water supply system for your fields.</p>
-            <a href="#" class="btn btn-success w-100">Request Quote</a>
+            <button class="btn btn-success w-100 request-quote-btn"
+                    data-equipment="Irrigation Pump"
+                    data-price="₹45,000"
+                    data-rental="₹800/day"
+                    data-subsidy="60%"
+                    data-category="Irrigation">
+              Request Quote
+            </button>
           </div>
         </div>
       </div>
@@ -176,18 +351,360 @@
     <div class="container">
       <h2 class="text-success mb-3">Government Subsidies</h2>
       <p class="mb-4">Get up to 50% subsidy on farm equipment purchases under various government schemes.</p>
-      <a href="#" class="btn btn-success">View Govt. Schemes</a>
+      <a href="subcidy.html" class="btn btn-success">View Govt. Schemes</a>
     </div>
   </section>
+
+  <!-- Quote Request Modal -->
+  <div class="modal fade" id="quoteModal" tabindex="-1" aria-labelledby="quoteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="quoteModalLabel">
+            <i class="bi bi-clipboard-check me-2"></i>Request Equipment Quote
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Form Content -->
+          <div id="quoteForm">
+            <!-- Equipment Details -->
+            <div class="equipment-specs">
+              <h6><i class="bi bi-info-circle me-2"></i>Equipment Details</h6>
+              <div class="row">
+                <div class="col-md-8">
+                  <strong id="equipmentName">Equipment Name</strong>
+                  <div class="text-muted" id="equipmentCategory">Category</div>
+                </div>
+                <div class="col-md-4 text-end">
+                  <span class="subsidy-badge" id="subsidyBadge">
+                    <i class="bi bi-gift me-1"></i>Up to 50% Subsidy
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quote Type Selection -->
+            <div class="quote-type-selector">
+              <div class="quote-type-btn active" data-type="purchase">
+                <i class="bi bi-cart-check"></i>
+                <strong>Purchase</strong>
+                <div class="text-muted small">Buy Equipment</div>
+              </div>
+              <div class="quote-type-btn" data-type="rental">
+                <i class="bi bi-calendar-range"></i>
+                <strong>Rental</strong>
+                <div class="text-muted small">Rent Equipment</div>
+              </div>
+            </div>
+
+            <!-- Price Display -->
+            <div class="price-display">
+              <p class="mb-1">Estimated Price</p>
+              <h3 id="priceDisplay">₹8,50,000</h3>
+              <p class="small" id="priceNote">Final price may vary based on location and specifications</p>
+            </div>
+
+            <!-- Benefits -->
+            <div class="mb-4">
+              <h6 class="mb-3"><i class="bi bi-star-fill text-warning me-2"></i>Why Choose Us?</h6>
+              <div class="benefit-item">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Government subsidy assistance up to 60%</span>
+              </div>
+              <div class="benefit-item">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Easy EMI options available</span>
+              </div>
+              <div class="benefit-item">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Free delivery and installation</span>
+              </div>
+              <div class="benefit-item">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>1-year warranty and maintenance support</span>
+              </div>
+            </div>
+
+            <!-- Contact Form -->
+            <form id="contactForm" class="form-section">
+              <h6 class="mb-3"><i class="bi bi-person-fill me-2"></i>Your Details</h6>
+              
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="fullName" class="form-label">Full Name *</label>
+                  <input type="text" class="form-control" id="fullName" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="phone" class="form-label">Phone Number *</label>
+                  <input type="tel" class="form-control" id="phone" pattern="[0-9]{10}" required>
+                </div>
+              </div>
+
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="email" class="form-label">Email Address</label>
+                  <input type="email" class="form-control" id="email">
+                </div>
+                <div class="col-md-6">
+                  <label for="location" class="form-label">Location *</label>
+                  <input type="text" class="form-control" id="location" placeholder="Village/City, District" required>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="landSize" class="form-label">Land Size (in Acres)</label>
+                <input type="number" class="form-control" id="landSize" placeholder="e.g., 5">
+              </div>
+
+              <!-- Rental Duration (Hidden by default) -->
+              <div class="rental-duration mb-3">
+                <label for="rentalDays" class="form-label">Rental Duration *</label>
+                <select class="form-select" id="rentalDays">
+                  <option value="">Select Duration</option>
+                  <option value="1">1 Day</option>
+                  <option value="3">3 Days</option>
+                  <option value="7">1 Week</option>
+                  <option value="15">15 Days</option>
+                  <option value="30">1 Month</option>
+                  <option value="custom">Custom Duration</option>
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Interested In:</label>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="subsidyInfo">
+                  <label class="form-check-label" for="subsidyInfo">
+                    Government subsidy information
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="loanInfo">
+                  <label class="form-check-label" for="loanInfo">
+                    Loan/EMI options
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="insuranceInfo">
+                  <label class="form-check-label" for="insuranceInfo">
+                    Equipment insurance
+                  </label>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="additionalNotes" class="form-label">Additional Requirements</label>
+                <textarea class="form-control" id="additionalNotes" rows="3" placeholder="Any specific requirements or questions..."></textarea>
+              </div>
+
+              <div class="alert alert-info mb-3">
+                <i class="bi bi-info-circle me-2"></i>
+                <small>Our team will contact you within 24 hours with a detailed quotation and subsidy information.</small>
+              </div>
+            </form>
+          </div>
+
+          <!-- Success Message -->
+          <div id="successMessage">
+            <div class="success-animation">
+              <i class="bi bi-check-circle-fill"></i>
+              <h4 class="mt-3 text-success">Request Submitted Successfully!</h4>
+              <p class="text-muted">Thank you for your interest. Our team will contact you within 24 hours.</p>
+              <div class="mt-4">
+                <p class="mb-2"><strong>What happens next?</strong></p>
+                <div class="benefit-item justify-content-center">
+                  <i class="bi bi-telephone-fill"></i>
+                  <span>Our expert will call you</span>
+                </div>
+                <div class="benefit-item justify-content-center">
+                  <i class="bi bi-file-earmark-text"></i>
+                  <span>Receive detailed quotation</span>
+                </div>
+                <div class="benefit-item justify-content-center">
+                  <i class="bi bi-gift"></i>
+                  <span>Get subsidy assistance</span>
+                </div>
+              </div>
+              <div class="mt-4">
+                <button class="btn btn-success me-2" onclick="location.href='orders.html'">
+                  <i class="bi bi-list-check me-2"></i>View My Requests
+                </button>
+                <button class="btn btn-outline-success" data-bs-dismiss="modal">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer" id="modalFooter">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-success" id="submitQuote">
+            <i class="bi bi-send me-2"></i>Submit Request
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Footer -->
   <footer class="bg-success text-white text-center py-3">
     <p class="mb-0">&copy; 2025 KrishiSarthi Platform. All rights reserved.</p>
   </footer>
 
-  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- Bootstrap Icons (for category icons) -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  
+  <script>
+    let currentQuoteType = 'purchase';
+    let currentEquipmentData = {};
+
+    // Initialize quote buttons
+    document.querySelectorAll('.request-quote-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const equipmentName = this.getAttribute('data-equipment');
+        const price = this.getAttribute('data-price');
+        const rental = this.getAttribute('data-rental');
+        const subsidy = this.getAttribute('data-subsidy');
+        const category = this.getAttribute('data-category');
+
+        currentEquipmentData = {
+          name: equipmentName,
+          price: price,
+          rental: rental,
+          subsidy: subsidy,
+          category: category
+        };
+
+        openQuoteModal();
+      });
+    });
+
+    function openQuoteModal() {
+      // Reset modal
+      document.getElementById('quoteForm').style.display = 'block';
+      document.getElementById('successMessage').style.display = 'none';
+      document.getElementById('modalFooter').style.display = 'flex';
+      document.getElementById('contactForm').reset();
+      currentQuoteType = 'purchase';
+      
+      // Set equipment details
+      document.getElementById('equipmentName').textContent = currentEquipmentData.name;
+      document.getElementById('equipmentCategory').textContent = currentEquipmentData.category;
+      document.getElementById('subsidyBadge').innerHTML = `<i class="bi bi-gift me-1"></i>Up to ${currentEquipmentData.subsidy} Subsidy`;
+      document.getElementById('priceDisplay').textContent = currentEquipmentData.price;
+      document.getElementById('priceNote').textContent = 'Final price may vary based on location and specifications';
+
+      // Reset quote type buttons
+      document.querySelectorAll('.quote-type-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      document.querySelector('[data-type="purchase"]').classList.add('active');
+      document.querySelector('.rental-duration').classList.remove('active');
+
+      // Show modal
+      const modal = new bootstrap.Modal(document.getElementById('quoteModal'));
+      modal.show();
+    }
+
+    // Quote type selection
+    document.querySelectorAll('.quote-type-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const type = this.getAttribute('data-type');
+        currentQuoteType = type;
+
+        // Update active state
+        document.querySelectorAll('.quote-type-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+
+        // Update price display
+        if (type === 'rental') {
+          document.getElementById('priceDisplay').textContent = currentEquipmentData.rental;
+          document.getElementById('priceNote').textContent = 'Rental rates may vary for longer durations';
+          document.querySelector('.rental-duration').classList.add('active');
+          document.getElementById('rentalDays').required = true;
+        } else {
+          document.getElementById('priceDisplay').textContent = currentEquipmentData.price;
+          document.getElementById('priceNote').textContent = 'Final price may vary based on location and specifications';
+          document.querySelector('.rental-duration').classList.remove('active');
+          document.getElementById('rentalDays').required = false;
+        }
+      });
+    });
+
+    // Submit quote request
+    document.getElementById('submitQuote').addEventListener('click', async function() {
+      const form = document.getElementById('contactForm');
+      
+      if (form.checkValidity()) {
+        // Disable button and show loading
+        const submitBtn = this;
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>Submitting...';
+
+        // Collect form data
+        const quotationData = {
+          equipment: {
+            name: currentEquipmentData.name,
+            category: currentEquipmentData.category,
+            price: currentEquipmentData.price,
+            rentalPrice: currentEquipmentData.rental,
+            subsidy: currentEquipmentData.subsidy
+          },
+          quotationType: currentQuoteType,
+          customerDetails: {
+            name: document.getElementById('fullName').value,
+            phone: document.getElementById('phone').value,
+            email: document.getElementById('email').value || null,
+            location: document.getElementById('location').value,
+            landSize: document.getElementById('landSize').value || null
+          },
+          rentalDuration: currentQuoteType === 'rental' ? document.getElementById('rentalDays').value : null,
+          interests: {
+            subsidy: document.getElementById('subsidyInfo').checked,
+            loan: document.getElementById('loanInfo').checked,
+            insurance: document.getElementById('insuranceInfo').checked
+          },
+          additionalNotes: document.getElementById('additionalNotes').value || null,
+          status: 'pending',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+
+        try {
+          // Send data to your backend API
+          const response = await fetch('http://localhost:5000/api/quotations', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(quotationData)
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to submit quotation');
+          }
+
+          const result = await response.json();
+          console.log('Quotation saved successfully:', result);
+
+          // Show success message
+          document.getElementById('quoteForm').style.display = 'none';
+          document.getElementById('successMessage').style.display = 'block';
+          document.getElementById('modalFooter').style.display = 'none';
+
+        } catch (error) {
+          console.error('Error submitting quotation:', error);
+          alert('Failed to submit quotation. Please try again or contact support.');
+          
+          // Re-enable button
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalText;
+        }
+      } else {
+        form.reportValidity();
+      }
+    });
+  </script>
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </body>
 </html>
