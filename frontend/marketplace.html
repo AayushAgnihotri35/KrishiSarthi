@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marketplace - KrishiSarthi</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    .hero-section {
+      background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+      color: white;
+      padding: 80px 0;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,144C960,149,1056,139,1152,128C1248,117,1344,107,1392,101.3L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat bottom;
+      background-size: cover;
+    }
+
+    .filter-card {
+      background: white;
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+      margin-bottom: 30px;
+      position: sticky;
+      top: 20px;
+    }
+
+    .listing-card {
+      background: white;
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .listing-card:hover {
+      border-color: #198754;
+      box-shadow: 0 5px 20px rgba(25, 135, 84, 0.15);
+      transform: translateY(-3px);
+    }
+
+    .listing-type-badge {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      z-index: 1;
+    }
+
+    .equipment-listing {
+      background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+      color: white;
+    }
+
+    .crop-listing {
+      background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+      color: white;
+    }
+
+    .category-badge {
+      background: #e9ecef;
+      color: #495057;
+      padding: 5px 12px;
+      border-radius: 15px;
+      font-size: 11px;
+      font-weight: 600;
+      display: inline-block;
+    }
+
+    .type-badge {
+      padding: 5px 12px;
+      border-radius: 15px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .type-purchase {
+      background: #d1e7dd;
+      color: #0f5132;
+    }
+
+    .type-rental {
+      background: #cfe2ff;
+      color: #084298;
+    }
+
+    .type-selling {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .location-tag {
+      background: #f8f9fa;
+      padding: 8px 15px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    .price-tag {
+      background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-weight: bold;
+      font-size: 18px;
+      text-align: center;
+      box-shadow: 0 3px 10px rgba(255, 193, 7, 0.3);
+    }
+
+    .quantity-badge {
+      background: #e7f5ff;
+      color: #0c5689;
+      padding: 8px 15px;
+      border-radius: 10px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .quality-badge {
+      padding: 5px 12px;
+      border-radius: 15px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .quality-premium {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .quality-standard {
+      background: #d1ecf1;
+      color: #0c5460;
+    }
+
+    .quality-fair {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .stats-card {
+      background: white;
+      border-radius: 15px;
+      padding: 20px;
+      text-align: center;
+      border: 2px solid #f0f0f0;
+      transition: all 0.3s ease;
+    }
+
+    .stats-card:hover {
+      border-color: #198754;
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .stats-card i {
+      font-size: 40px;
+      margin-bottom: 10px;
+    }
+
+    .contact-btn {
+      background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+      border: none;
+      padding: 10px 25px;
+      border-radius: 25px;
+      color: white;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .contact-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 15px rgba(25, 135, 84, 0.4);
+      color: white;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 80px 20px;
+    }
+
+    .empty-state i {
+      font-size: 100px;
+      color: #dee2e6;
+      margin-bottom: 20px;
+    }
+
+    .new-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #dc3545;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 15px;
+      font-size: 11px;
+      font-weight: bold;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .tab-filter {
+      background: white;
+      border-radius: 15px;
+      padding: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .tab-filter .btn {
+      border-radius: 10px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .service-chip {
+      background: #e9ecef;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 11px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-right: 5px;
+      margin-bottom: 5px;
+    }
+
+    .service-chip i {
+      color: #198754;
+    }
+  </style>
+</head>
+<body class="bg-light">
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+    <div class="container-fluid">
+      <a class="navbar-brand d-flex align-items-center" href="index.html">
+        <img src="./assests/logo.jpg" alt="Logo" width="40" height="40" class="me-2">
+        <strong>KrishiSarthi</strong>
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="weather.html">Weather & Advisory</a></li>
+          <li class="nav-item"><a class="nav-link" href="Equipment.html">Equipment</a></li>
+          <li class="nav-item"><a class="nav-link" href="market.html">Market Linkage</a></li>
+          <li class="nav-item"><a class="nav-link active" href="marketplace.html">Market Place</a></li>
+          <li class="nav-item"><a class="nav-link" href="insurance.html">Insurance</a></li>
+          <li class="nav-item"><a class="nav-link" href="loan.html">Loan</a></li>
+          <li class="nav-item"><a class="nav-link" href="subcidy.html">Subsidy</a></li>
+
+          <li class="nav-item dropdown profile-dropdown ms-2">
+            <a class="nav-link dropdown-toggle p-0" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <div class="profile-icon">
+                <i class="fas fa-user"></i>
+              </div>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+              <li>
+                <a class="dropdown-item" href="profile.html">
+                  <i class="fas fa-user-circle"></i> My Profile
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="orders.html">
+                  <i class="fas fa-shopping-cart"></i> My Orders
+                </a>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <a class="dropdown-item text-danger" href="#" id="logoutBtn">
+                  <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="container text-center position-relative">
+      <h1 class="display-4 fw-bold mb-3">
+        <i class="bi bi-shop me-3"></i>Unified Marketplace
+      </h1>
+      <p class="lead mb-4">Browse equipment requests and crop selling offers - Connect with farmers directly</p>
+      <div class="row justify-content-center">
+        <div class="col-md-8">
+          <div class="input-group input-group-lg">
+            <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control" id="quickSearch" placeholder="Search by equipment, crop, location...">
+            <button class="btn btn-warning" onclick="performQuickSearch()">Search</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <div class="container pb-5">
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+      <div class="col-md-3 mb-3">
+        <div class="stats-card">
+          <i class="bi bi-grid-3x3 text-success"></i>
+          <h3 class="mb-0" id="totalListings">0</h3>
+          <small class="text-muted">Total Listings</small>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="stats-card">
+          <i class="bi bi-gear text-primary"></i>
+          <h3 class="mb-0" id="equipmentCount">0</h3>
+          <small class="text-muted">Equipment Requests</small>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="stats-card">
+          <i class="bi bi-flower2 text-warning"></i>
+          <h3 class="mb-0" id="cropCount">0</h3>
+          <small class="text-muted">Crop Listings</small>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="stats-card">
+          <i class="bi bi-clock-history text-info"></i>
+          <h3 class="mb-0" id="activeCount">0</h3>
+          <small class="text-muted">Active Today</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Filters Sidebar -->
+      <div class="col-lg-3">
+        <div class="filter-card">
+          <h5 class="mb-4">
+            <i class="bi bi-funnel me-2"></i>Filter Listings
+          </h5>
+
+          <!-- Listing Type -->
+          <div class="mb-3">
+            <label class="form-label fw-bold">Listing Type</label>
+            <select class="form-select" id="listingTypeFilter">
+              <option value="all">All Listings</option>
+              <option value="equipment">Equipment Requests</option>
+              <option value="crop">Crop Selling</option>
+            </select>
+          </div>
+
+          <!-- Category Filter (Dynamic) -->
+          <div class="mb-3" id="categoryFilterContainer">
+            <label class="form-label fw-bold">Category</label>
+            <select class="form-select" id="categoryFilter">
+              <option value="">All Categories</option>
+            </select>
+          </div>
+
+          <!-- Location Search -->
+          <div class="mb-3">
+            <label class="form-label fw-bold">Location</label>
+            <input type="text" class="form-control" id="locationFilter" placeholder="Enter location...">
+          </div>
+
+          <!-- Price Range -->
+          <div class="mb-3">
+            <label class="form-label fw-bold">Price Range (₹)</label>
+            <div class="row g-2">
+              <div class="col-6">
+                <input type="number" class="form-control" id="minPrice" placeholder="Min">
+              </div>
+              <div class="col-6">
+                <input type="number" class="form-control" id="maxPrice" placeholder="Max">
+              </div>
+            </div>
+          </div>
+
+          <button class="btn btn-success w-100 mb-2" onclick="applyFilters()">
+            <i class="bi bi-check-circle me-2"></i>Apply Filters
+          </button>
+          <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">
+            <i class="bi bi-x-circle me-2"></i>Clear All
+          </button>
+        </div>
+      </div>
+
+      <!-- Listings Display -->
+      <div class="col-lg-9">
+        <!-- Tab Filter -->
+        <div class="tab-filter">
+          <div class="btn-group w-100" role="group">
+            <button type="button" class="btn btn-outline-success active" id="tabAll" onclick="filterByTab('all')">
+              <i class="bi bi-grid-3x3 me-2"></i>All (<span id="countAll">0</span>)
+            </button>
+            <button type="button" class="btn btn-outline-success" id="tabEquipment" onclick="filterByTab('equipment')">
+              <i class="bi bi-gear me-2"></i>Equipment (<span id="countEquipment">0</span>)
+            </button>
+            <button type="button" class="btn btn-outline-success" id="tabCrop" onclick="filterByTab('crop')">
+              <i class="bi bi-flower2 me-2"></i>Crops (<span id="countCrop">0</span>)
+            </button>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4 class="mb-0">
+            <i class="bi bi-list-ul me-2"></i>Showing (<span id="listingCount">0</span>) Results
+          </h4>
+          <div class="btn-group" role="group">
+            <button type="button" class="btn btn-outline-success btn-sm" onclick="sortBy('recent')">
+              <i class="bi bi-clock-history me-1"></i>Recent
+            </button>
+            <button type="button" class="btn btn-outline-success btn-sm" onclick="sortBy('price')">
+              <i class="bi bi-cash me-1"></i>Price
+            </button>
+          </div>
+        </div>
+
+        <!-- Listings Container -->
+        <div id="listingsContainer">
+          <!-- Dynamic content will be loaded here -->
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-container text-center mt-4" id="paginationContainer"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contact Modal -->
+  <div class="modal fade" id="contactModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title" id="contactModalTitle">
+            <i class="bi bi-telephone me-2"></i>Contact Details
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="contactModalBody"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-success text-white text-center py-3 mt-5">
+    <p class="mb-0">&copy; 2025 KrishiSarthi Platform. All rights reserved.</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script>
+    const EQUIPMENT_API = 'http://localhost:5000/api/quotations';
+    const CROP_API = 'http://localhost:5000/api/crop-listings';
+    
+    let allListings = [];
+    let filteredListings = [];
+    let currentTab = 'all';
+    let currentSort = 'recent';
+    const itemsPerPage = 10;
+    let currentPage = 1;
+
+    // Load all data on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      loadAllData();
+    });
+
+    // Load equipment and crop data
+    async function loadAllData() {
+      try {
+        const [equipmentRes, cropRes] = await Promise.all([
+          fetch(`${EQUIPMENT_API}?limit=100`),
+          fetch(`${CROP_API}?limit=100`)
+        ]);
+
+        const equipmentData = await equipmentRes.json();
+        const cropData = await cropRes.json();
+
+        // Normalize equipment data
+        const equipmentListings = equipmentData.success ? equipmentData.data.map(item => ({
+          ...item,
+          listingType: 'equipment',
+          id: item._id
+        })) : [];
+
+        // Normalize crop data
+        const cropListings = cropData.success ? cropData.data.map(item => ({
+          ...item,
+          listingType: 'crop',
+          id: item._id
+        })) : [];
+
+        allListings = [...equipmentListings, ...cropListings];
+        filteredListings = [...allListings];
+        
+        updateStatistics();
+        displayListings();
+      } catch (error) {
+        console.error('Error loading data:', error);
+        showEmptyState();
+      }
+    }
+
+    // Display listings
+    function displayListings() {
+      const container = document.getElementById('listingsContainer');
+      document.getElementById('listingCount').textContent = filteredListings.length;
+
+      if (filteredListings.length === 0) {
+        showEmptyState();
+        return;
+      }
+
+      sortListings();
+
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const paginatedListings = filteredListings.slice(startIndex, endIndex);
+
+      container.innerHTML = paginatedListings.map(listing => {
+        if (listing.listingType === 'equipment') {
+          return renderEquipmentCard(listing);
+        } else {
+          return renderCropCard(listing);
+        }
+      }).join('');
+
+      updatePagination();
+    }
+
+    // Render equipment card
+    function renderEquipmentCard(item) {
+      const itemIsNew = isNewListing(item.createdAt);
+      return `
+        <div class="listing-card position-relative">
+          <span class="listing-type-badge equipment-listing">
+            <i class="bi bi-gear me-1"></i>Equipment Request
+          </span>
+          ${itemIsNew ? '<span class="new-badge">NEW</span>' : ''}
+          
+          <div class="row mt-4">
+            <div class="col-md-8">
+              <span class="category-badge mb-2">${item.equipment.category}</span>
+              <h5 class="mt-2 mb-1">${item.equipment.name}</h5>
+              <small class="text-muted">
+                <i class="bi bi-clock me-1"></i>${getTimeAgo(item.createdAt)}
+              </small>
+
+              <div class="mt-3 mb-2">
+                <span class="location-tag">
+                  <i class="bi bi-geo-alt-fill text-danger"></i>
+                  <strong>${item.customerDetails.location}</strong>
+                </span>
+                <span class="type-badge type-${item.quotationType} ms-2">${item.quotationType}</span>
+              </div>
+
+              ${item.customerDetails.landSize ? `
+              <p class="mb-1"><i class="bi bi-crop me-2 text-success"></i><strong>Land:</strong> ${item.customerDetails.landSize} acres</p>
+              ` : ''}
+              
+              ${item.rentalDuration ? `
+              <p class="mb-1"><i class="bi bi-calendar-range me-2 text-info"></i><strong>Duration:</strong> ${item.rentalDuration}</p>
+              ` : ''}
+            </div>
+
+            <div class="col-md-4 text-center">
+              <div class="price-tag mb-3">
+                ${item.quotationType === 'rental' ? item.equipment.rentalPrice : item.equipment.price}
+              </div>
+              <button class="contact-btn w-100" onclick="showEquipmentContact('${item.id}')">
+                <i class="bi bi-telephone-fill me-2"></i>Contact Customer
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Render crop card
+    function renderCropCard(item) {
+      const itemIsNew = isNewListing(item.createdAt);
+      return `
+        <div class="listing-card position-relative">
+          <span class="listing-type-badge crop-listing">
+            <i class="bi bi-flower2 me-1"></i>Crop Selling
+          </span>
+          ${itemIsNew ? '<span class="new-badge">NEW</span>' : ''}
+          
+          <div class="row mt-4">
+            <div class="col-md-8">
+              <span class="category-badge mb-2">${item.crop.category}</span>
+              <h5 class="mt-2 mb-1">${item.crop.name}</h5>
+              <small class="text-muted">
+                <i class="bi bi-clock me-1"></i>${getTimeAgo(item.createdAt)}
+              </small>
+
+              <div class="mt-3 mb-2">
+                <span class="location-tag">
+                  <i class="bi bi-geo-alt-fill text-danger"></i>
+                  <strong>${item.seller.location}</strong>
+                </span>
+                <span class="quality-badge quality-${item.cropDetails.quality} ms-2">${item.cropDetails.quality}</span>
+              </div>
+
+              <div class="mb-2">
+                <span class="quantity-badge">
+                  <i class="bi bi-box-seam"></i>
+                  ${item.cropDetails.quantity} Quintals Available
+                </span>
+              </div>
+
+              <p class="mb-1">
+                <i class="bi bi-currency-rupee me-2 text-success"></i>
+                <strong>MSP:</strong> ${item.crop.msp} / quintal
+              </p>
+
+              ${item.services.transport || item.services.storage || item.services.qualityTest ? `
+              <div class="mt-2">
+                ${item.services.transport ? '<span class="service-chip"><i class="bi bi-truck"></i>Transport</span>' : ''}
+                ${item.services.storage ? '<span class="service-chip"><i class="bi bi-box"></i>Storage</span>' : ''}
+                ${item.services.qualityTest ? '<span class="service-chip"><i class="bi bi-shield-check"></i>Quality Test</span>' : ''}
+              </div>
+              ` : ''}
+            </div>
+
+            <div class="col-md-4 text-center">
+              <div class="price-tag mb-3">
+                ₹${item.cropDetails.expectedPrice}/quintal
+              </div>
+              <button class="contact-btn w-100" onclick="showCropContact('${item.id}')">
+                <i class="bi bi-telephone-fill me-2"></i>Contact Seller
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Show equipment contact modal
+    async function showEquipmentContact(id) {
+      try {
+        const response = await fetch(`${EQUIPMENT_API}/${id}`);
+        const result = await response.json();
+        
+        if (result.success) {
+          const item = result.data;
+          document.getElementById('contactModalTitle').innerHTML = '<i class="bi bi-telephone me-2"></i>Contact Customer';
+          document.getElementById('contactModalBody').innerHTML = `
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <h6 class="text-success mb-3"><i class="bi bi-gear me-2"></i>Equipment Details</h6>
+                <p><strong>Equipment:</strong> ${item.equipment.name}</p>
+                <p><strong>Category:</strong> ${item.equipment.category}</p>
+                <p><strong>Type:</strong> ${item.quotationType}</p>
+                <p><strong>Price:</strong> ${item.quotationType === 'rental' ? item.equipment.rentalPrice : item.equipment.price}</p>
+              </div>
+              <div class="col-md-6 mb-3">
+                <h6 class="text-success mb-3"><i class="bi bi-person me-2"></i>Customer Details</h6>
+                <p><strong>Name:</strong> ${item.customerDetails.name}</p>
+                <p><strong>Phone:</strong> <a href="tel:${item.customerDetails.phone}">${item.customerDetails.phone}</a></p>
+                ${item.customerDetails.email ? `<p><strong>Email:</strong> ${item.customerDetails.email}</p>` : ''}
+                <p><strong>Location:</strong> ${item.customerDetails.location}</p>
+              </div>
+            </div>
+            <div class="alert alert-success">
+              <div class="d-flex gap-2">
+                <a href="tel:${item.customerDetails.phone}" class="btn btn-success flex-fill">
+                  <i class="bi bi-telephone me-2"></i>Call Now
+                </a>
+                <a href="https://wa.me/91${item.customerDetails.phone}" target="_blank" class="btn btn-success flex-fill">
+                  <i class="bi bi-whatsapp me-2"></i>WhatsApp
+                </a>
+              </div>
+            </div>
+          `;
+          new bootstrap.Modal(document.getElementById('contactModal')).show();
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+
+    // Show crop contact modal
+    async function showCropContact(id) {
+      try {
+        const response = await fetch(`${CROP_API}/${id}`);
+        const result = await response.json();
+        
+        if (result.success) {
+          const item = result.data;
+          document.getElementById('contactModalTitle').innerHTML = '<i class="bi bi-telephone me-2"></i>Contact Seller';
+          document.getElementById('contactModalBody').innerHTML = `
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <h6 class="text-success mb-3"><i class="bi bi-flower2 me-2"></i>Crop Details</h6>
+                <p><strong>Crop:</strong> ${item.crop.name}</p>
+                <p><strong>Category:</strong> ${item.crop.category}</p>
+                <p><strong>Quantity:</strong> ${item.cropDetails.quantity} quintals</p>
+                <p><strong>Quality:</strong> ${item.cropDetails.quality}</p>
+                <p><strong>Expected Price:</strong> ₹${item.cropDetails.expectedPrice}/quintal</p>
+              </div>
+              <div class="col-md-6 mb-3">
+                <h6 class="text-success mb-3"><i class="bi bi-person me-2"></i>Seller Details</h6>
+                <p><strong>Name:</strong> ${item.seller.name}</p>
+                <p><strong>Phone:</strong> <a href="tel:${item.seller.phone}">${item.seller.phone}</a></p>
+                ${item.seller.email ? `<p><strong>Email:</strong> ${item.seller.email}</p>` : ''}
+                <p><strong>Location:</strong> ${item.seller.location}</p>
+              </div>
+            </div>
+            ${item.additionalInfo ? `
+            <div class="alert alert-info">
+              <strong><i class="bi bi-info-circle me-2"></i>Additional Information:</strong>
+              <p class="mb-0 mt-2">${item.additionalInfo}</p>
+            </div>
+            ` : ''}
+            <div class="alert alert-success">
+              <div class="d-flex gap-2">
+                <a href="tel:${item.seller.phone}" class="btn btn-success flex-fill">
+                  <i class="bi bi-telephone me-2"></i>Call Now
+                </a>
+                <a href="https://wa.me/91${item.seller.phone}" target="_blank" class="btn btn-success flex-fill">
+                  <i class="bi bi-whatsapp me-2"></i>WhatsApp
+                </a>
+              </div>
+            </div>
+          `;
+          new bootstrap.Modal(document.getElementById('contactModal')).show();
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+
+    // Filter by tab
+    function filterByTab(tab) {
+      currentTab = tab;
+      currentPage = 1;
+
+      // Update active button
+      document.querySelectorAll('.tab-filter .btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.add('active');
+
+      applyFilters();
+    }
+
+    // Apply filters
+    function applyFilters() {
+      filteredListings = allListings.filter(listing => {
+        // Tab filter
+        if (currentTab !== 'all' && listing.listingType !== currentTab) return false;
+
+        // Listing type filter
+        const listingType = document.getElementById('listingTypeFilter').value;
+        if (listingType !== 'all' && listing.listingType !== listingType) return false;
+
+        // Category filter
+        const category = document.getElementById('categoryFilter').value;
+        if (category) {
+          if (listing.listingType === 'equipment' && listing.equipment.category !== category) return false;
+          if (listing.listingType === 'crop' && listing.crop.category !== category) return false;
+        }
+
+        // Location filter
+        const location = document.getElementById('locationFilter').value.toLowerCase();
+        if (location) {
+          const itemLocation = listing.listingType === 'equipment' 
+            ? listing.customerDetails.location.toLowerCase() 
+            : listing.seller.location.toLowerCase();
+          if (!itemLocation.includes(location)) return false;
+        }
+
+        // Price filter
+        const minPrice = parseInt(document.getElementById('minPrice').value) || 0;
+        const maxPrice = parseInt(document.getElementById('maxPrice').value) || Infinity;
+        let itemPrice = 0;
+
+        if (listing.listingType === 'equipment') {
+          itemPrice = extractPrice(listing.quotationType === 'rental' ? listing.equipment.rentalPrice : listing.equipment.price);
+        } else {
+          itemPrice = listing.cropDetails.expectedPrice;
+        }
+
+        if (itemPrice < minPrice || itemPrice > maxPrice) return false;
+
+        return true;
+      });
+
+      currentPage = 1;
+      displayListings();
+      updateTabCounts();
+    }
+
+    // Clear filters
+    function clearFilters() {
+      document.getElementById('listingTypeFilter').value = 'all';
+      document.getElementById('categoryFilter').value = '';
+      document.getElementById('locationFilter').value = '';
+      document.getElementById('minPrice').value = '';
+      document.getElementById('maxPrice').value = '';
+      
+      currentTab = 'all';
+      filteredListings = [...allListings];
+      currentPage = 1;
+      
+      document.querySelectorAll('.tab-filter .btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById('tabAll').classList.add('active');
+      
+      displayListings();
+      updateTabCounts();
+    }
+
+    // Quick search
+    function performQuickSearch() {
+      const searchTerm = document.getElementById('quickSearch').value.toLowerCase();
+      
+      if (!searchTerm) {
+        filteredListings = [...allListings];
+      } else {
+        filteredListings = allListings.filter(listing => {
+          if (listing.listingType === 'equipment') {
+            return listing.equipment.name.toLowerCase().includes(searchTerm) ||
+                   listing.equipment.category.toLowerCase().includes(searchTerm) ||
+                   listing.customerDetails.location.toLowerCase().includes(searchTerm) ||
+                   listing.customerDetails.name.toLowerCase().includes(searchTerm);
+          } else {
+            return listing.crop.name.toLowerCase().includes(searchTerm) ||
+                   listing.crop.category.toLowerCase().includes(searchTerm) ||
+                   listing.seller.location.toLowerCase().includes(searchTerm) ||
+                   listing.seller.name.toLowerCase().includes(searchTerm);
+          }
+        });
+      }
+
+      currentPage = 1;
+      displayListings();
+    }
+
+    // Sort listings
+    function sortBy(type) {
+      currentSort = type;
+      displayListings();
+    }
+
+    function sortListings() {
+      if (currentSort === 'recent') {
+        filteredListings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      } else if (currentSort === 'price') {
+        filteredListings.sort((a, b) => {
+          let priceA = 0, priceB = 0;
+          
+          if (a.listingType === 'equipment') {
+            priceA = extractPrice(a.quotationType === 'rental' ? a.equipment.rentalPrice : a.equipment.price);
+          } else {
+            priceA = a.cropDetails.expectedPrice;
+          }
+          
+          if (b.listingType === 'equipment') {
+            priceB = extractPrice(b.quotationType === 'rental' ? b.equipment.rentalPrice : b.equipment.price);
+          } else {
+            priceB = b.cropDetails.expectedPrice;
+          }
+          
+          return priceB - priceA;
+        });
+      }
+    }
+
+    // Update statistics
+    function updateStatistics() {
+      const equipmentCount = allListings.filter(l => l.listingType === 'equipment').length;
+      const cropCount = allListings.filter(l => l.listingType === 'crop').length;
+      const activeToday = allListings.filter(l => isNewListing(l.createdAt)).length;
+
+      document.getElementById('totalListings').textContent = allListings.length;
+      document.getElementById('equipmentCount').textContent = equipmentCount;
+      document.getElementById('cropCount').textContent = cropCount;
+      document.getElementById('activeCount').textContent = activeToday;
+
+      updateTabCounts();
+    }
+
+    // Update tab counts
+    function updateTabCounts() {
+      const equipmentCount = filteredListings.filter(l => l.listingType === 'equipment').length;
+      const cropCount = filteredListings.filter(l => l.listingType === 'crop').length;
+
+      document.getElementById('countAll').textContent = filteredListings.length;
+      document.getElementById('countEquipment').textContent = equipmentCount;
+      document.getElementById('countCrop').textContent = cropCount;
+    }
+
+    // Update pagination
+    function updatePagination() {
+      const totalPages = Math.ceil(filteredListings.length / itemsPerPage);
+      const container = document.getElementById('paginationContainer');
+
+      if (totalPages <= 1) {
+        container.innerHTML = '';
+        return;
+      }
+
+      let html = '<ul class="pagination">';
+      
+      html += `
+        <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+          <a class="page-link" href="#" onclick="changePage(${currentPage - 1}); return false;">Previous</a>
+        </li>
+      `;
+
+      for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+          html += `
+            <li class="page-item ${i === currentPage ? 'active' : ''}">
+              <a class="page-link" href="#" onclick="changePage(${i}); return false;">${i}</a>
+            </li>
+          `;
+        } else if (i === currentPage - 2 || i === currentPage + 2) {
+          html += '<li class="page-item disabled"><span class="page-link">...</span></li>';
+        }
+      }
+
+      html += `
+        <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+          <a class="page-link" href="#" onclick="changePage(${currentPage + 1}); return false;">Next</a>
+        </li>
+      `;
+
+      html += '</ul>';
+      container.innerHTML = html;
+    }
+
+    // Change page
+    function changePage(page) {
+      currentPage = page;
+      displayListings();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Helper functions
+    function isNewListing(dateString) {
+      const oneDayAgo = new Date();
+      oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+      return new Date(dateString) > oneDayAgo;
+    }
+
+    function getTimeAgo(dateString) {
+      const now = new Date();
+      const date = new Date(dateString);
+      const seconds = Math.floor((now - date) / 1000);
+
+      if (seconds < 60) return 'Just now';
+      if (seconds < 3600) return Math.floor(seconds / 60) + ' minutes ago';
+      if (seconds < 86400) return Math.floor(seconds / 3600) + ' hours ago';
+      if (seconds < 604800) return Math.floor(seconds / 86400) + ' days ago';
+      return date.toLocaleDateString('en-IN');
+    }
+
+    function extractPrice(priceStr) {
+      return parseInt(priceStr.replace(/[^0-9]/g, '')) || 0;
+    }
+
+    function showEmptyState() {
+      document.getElementById('listingsContainer').innerHTML = `
+        <div class="empty-state">
+          <i class="bi bi-inbox"></i>
+          <h4 class="mt-3">No Listings Found</h4>
+          <p class="text-muted">Try adjusting your filters or check back later for new listings.</p>
+        </div>
+      `;
+      document.getElementById('listingCount').textContent = '0';
+      document.getElementById('paginationContainer').innerHTML = '';
+    }
+
+    // Update category filter based on listing type
+    document.getElementById('listingTypeFilter').addEventListener('change', function() {
+      const categorySelect = document.getElementById('categoryFilter');
+      const type = this.value;
+
+      if (type === 'equipment') {
+        categorySelect.innerHTML = `
+          <option value="">All Categories</option>
+          <option value="Tractor">Tractors</option>
+          <option value="Harvester">Harvesters</option>
+          <option value="Irrigation">Irrigation Tools</option>
+          <option value="Soil Prep">Soil Prep Tools</option>
+        `;
+      } else if (type === 'crop') {
+        categorySelect.innerHTML = `
+          <option value="">All Categories</option>
+          <option value="Grain">Grains</option>
+          <option value="Oilseed">Oilseeds</option>
+          <option value="Fiber">Fiber Crops</option>
+          <option value="Vegetable">Vegetables</option>
+        `;
+      } else {
+        categorySelect.innerHTML = '<option value="">All Categories</option>';
+      }
+    });
+
+    // Logout functionality
+    document.getElementById('logoutBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      if (confirm('Are you sure you want to logout?')) {
+        // Add your logout logic here
+        window.location.href = 'index.html';
+      }
+    });
+  </script>
+</body>
+</html>

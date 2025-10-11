@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Orders - KrishiSarthi</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    .hero-section {
+      background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+      color: white;
+      padding: 60px 0;
+      margin-bottom: 30px;
+    }
+
+    .order-card {
+      border-left: 4px solid #198754;
+      transition: all 0.3s ease;
+      margin-bottom: 20px;
+    }
+
+    .order-card.crop-card {
+      border-left-color: #ff6b35;
+    }
+
+    .order-card:hover {
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      transform: translateY(-2px);
+    }
+
+    .listing-type-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 5px 12px;
+      border-radius: 15px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .equipment-badge {
+      background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+      color: white;
+    }
+
+    .crop-badge {
+      background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+      color: white;
+    }
+
+    .status-badge {
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-contacted { background: #d1ecf1; color: #0c5460; }
+    .status-quoted { background: #cfe2ff; color: #084298; }
+    .status-approved, .status-active { background: #d1e7dd; color: #0f5132; }
+    .status-rejected, .status-cancelled { background: #f8d7da; color: #842029; }
+    .status-completed, .status-sold { background: #198754; color: white; }
+    .status-negotiating { background: #e7f3ff; color: #004085; }
+    .status-expired { background: #6c757d; color: white; }
+
+    .timeline {
+      position: relative;
+      padding-left: 30px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 10px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #dee2e6;
+    }
+
+    .timeline-item {
+      position: relative;
+      padding-bottom: 20px;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -24px;
+      top: 5px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #198754;
+      border: 3px solid white;
+      box-shadow: 0 0 0 2px #198754;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+    }
+
+    .empty-state i {
+      font-size: 80px;
+      color: #dee2e6;
+      margin-bottom: 20px;
+    }
+
+    .filter-section {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      margin-bottom: 30px;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .detail-row:last-child {
+      border-bottom: none;
+    }
+
+    .quotation-number {
+      font-family: 'Courier New', monospace;
+      font-weight: bold;
+      color: #198754;
+      font-size: 14px;
+    }
+
+    .contact-support {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      z-index: 1000;
+    }
+
+    .contact-support .btn {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      box-shadow: 0 4px 12px rgba(25, 135, 84, 0.4);
+    }
+
+    .loading-spinner {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 300px;
+    }
+
+    .tab-pills {
+      background: white;
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .tab-pills .btn {
+      border-radius: 20px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body class="bg-light">
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="index.html">
+        <img src="./assests/logo.jpg" alt="Logo" width="40" height="40" class="me-2">
+        <strong>KrishiSarthi</strong>
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="weather.html">Weather & Advisory</a></li>
+          <li class="nav-item"><a class="nav-link" href="Equipment.html">Equipment</a></li>
+          <li class="nav-item"><a class="nav-link" href="market.html">Market Linkage</a></li>
+          <li class="nav-item"><a class="nav-link" href="marketplace.html">Market Place</a></li>
+          <li class="nav-item"><a class="nav-link" href="insurance.html">Insurance</a></li>
+          <li class="nav-item"><a class="nav-link" href="loan.html">Loan</a></li>
+          <li class="nav-item"><a class="nav-link" href="subcidy.html">Subsidy</a></li>
+          <li class="nav-item dropdown profile-dropdown ms-2">
+            <a class="nav-link dropdown-toggle p-0" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <div class="profile-icon">
+                <i class="fas fa-user"></i>
+              </div>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+              <li>
+                <a class="dropdown-item" href="profile.html">
+                  <i class="fas fa-user-circle"></i> My Profile
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="orders.html">
+                  <i class="fas fa-shopping-cart"></i> My Orders
+                </a>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <a class="dropdown-item text-danger" href="#" id="logoutBtn">
+                  <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="container">
+      <h1 class="display-5 fw-bold mb-3">
+        <i class="bi bi-clipboard-check me-3"></i>My Orders & Listings
+      </h1>
+      <p class="lead">Track your equipment requests and crop selling listings in real-time</p>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <div class="container pb-5">
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+      <div class="col-md-2 mb-3">
+        <div class="card text-center border-0 shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-list-ul fs-1 text-primary mb-2"></i>
+            <h3 class="mb-0" id="totalItems">0</h3>
+            <small class="text-muted">Total</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-2 mb-3">
+        <div class="card text-center border-0 shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-gear fs-1 text-success mb-2"></i>
+            <h3 class="mb-0" id="equipmentCount">0</h3>
+            <small class="text-muted">Equipment</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-2 mb-3">
+        <div class="card text-center border-0 shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-flower2 fs-1 text-warning mb-2"></i>
+            <h3 class="mb-0" id="cropCount">0</h3>
+            <small class="text-muted">Crops</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-2 mb-3">
+        <div class="card text-center border-0 shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-hourglass-split fs-1 text-info mb-2"></i>
+            <h3 class="mb-0" id="pendingCount">0</h3>
+            <small class="text-muted">Pending</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-2 mb-3">
+        <div class="card text-center border-0 shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-check-circle fs-1 text-success mb-2"></i>
+            <h3 class="mb-0" id="activeCount">0</h3>
+            <small class="text-muted">Active</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-2 mb-3">
+        <div class="card text-center border-0 shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-bag-check fs-1 text-primary mb-2"></i>
+            <h3 class="mb-0" id="completedCount">0</h3>
+            <small class="text-muted">Completed</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+      <div class="row align-items-end">
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-bold">Phone Number *</label>
+          <input type="tel" class="form-control form-control-lg" id="phoneInput" placeholder="Enter your phone number" maxlength="10">
+        </div>
+        <div class="col-md-3 mb-3">
+          <label class="form-label fw-bold">Listing Type</label>
+          <select class="form-select" id="typeFilter">
+            <option value="all">All Types</option>
+            <option value="equipment">Equipment Only</option>
+            <option value="crop">Crops Only</option>
+          </select>
+        </div>
+        <div class="col-md-3 mb-3">
+          <label class="form-label fw-bold">Status</label>
+          <select class="form-select" id="statusFilter">
+            <option value="">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="active">Active</option>
+            <option value="contacted">Contacted</option>
+            <option value="approved">Approved</option>
+            <option value="sold">Sold</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <button class="btn btn-success btn-lg w-100" onclick="loadAllOrders()">
+            <i class="bi bi-search me-2"></i>Search My Orders
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Pills -->
+    <div class="tab-pills">
+      <div class="btn-group w-100" role="group">
+        <button type="button" class="btn btn-outline-success active" id="tabAll" onclick="filterTab('all')">
+          <i class="bi bi-grid-3x3 me-2"></i>All (<span id="countAll">0</span>)
+        </button>
+        <button type="button" class="btn btn-outline-success" id="tabEquipment" onclick="filterTab('equipment')">
+          <i class="bi bi-gear me-2"></i>Equipment (<span id="countEquipment">0</span>)
+        </button>
+        <button type="button" class="btn btn-outline-success" id="tabCrop" onclick="filterTab('crop')">
+          <i class="bi bi-flower2 me-2"></i>Crops (<span id="countCrop">0</span>)
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="loading-spinner" style="display: none;">
+      <div class="spinner-border text-success" role="status" style="width: 3rem; height: 3rem;">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+
+    <!-- Orders List -->
+    <div id="ordersContainer">
+      <!-- Empty state shown by default -->
+      <div class="empty-state">
+        <i class="bi bi-inbox"></i>
+        <h4 class="text-muted">No Orders Found</h4>
+        <p class="text-muted">Enter your phone number and click "Search My Orders" to view your listings</p>
+        <div class="mt-3">
+          <a href="Equipment.html" class="btn btn-success me-2">
+            <i class="bi bi-plus-circle me-2"></i>Request Equipment
+          </a>
+          <a href="market.html" class="btn btn-warning">
+            <i class="bi bi-flower2 me-2"></i>Sell Crops
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order Detail Modal -->
+  <div class="modal fade" id="orderDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title" id="modalTitle">
+            <i class="bi bi-file-text me-2"></i>Details
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="orderDetailBody">
+          <!-- Dynamic content -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-success" onclick="contactSupport()">
+            <i class="bi bi-telephone me-2"></i>Contact Support
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Contact Support Button -->
+  <div class="contact-support">
+    <button class="btn btn-success" onclick="contactSupport()" title="Contact Support">
+      <i class="bi bi-headset fs-4"></i>
+    </button>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-success text-white text-center py-3 mt-5">
+    <p class="mb-0">&copy; 2025 KrishiSarthi Platform. All rights reserved.</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script>
+    const EQUIPMENT_API = 'http://localhost:5000/api/quotations';
+    const CROP_API = 'http://localhost:5000/api/crop-listings';
+    let allOrders = [];
+    let currentTab = 'all';
+
+    // Load orders on page load if phone number is stored
+    window.addEventListener('DOMContentLoaded', () => {
+      const storedPhone = localStorage.getItem('userPhone');
+      if (storedPhone) {
+        document.getElementById('phoneInput').value = storedPhone;
+        loadAllOrders();
+      }
+    });
+
+    // Load all orders (equipment + crops)
+    async function loadAllOrders() {
+      const phone = document.getElementById('phoneInput').value.trim();
+      
+      if (!phone || phone.length !== 10) {
+        alert('Please enter a valid 10-digit phone number');
+        return;
+      }
+
+      // Save phone for future use
+      localStorage.setItem('userPhone', phone);
+
+      // Show loading
+      document.getElementById('loadingState').style.display = 'flex';
+      document.getElementById('ordersContainer').style.display = 'none';
+
+      try {
+        // Fetch both equipment and crop data
+        const [equipmentRes, cropRes] = await Promise.all([
+          fetch(`${EQUIPMENT_API}/customer/${phone}`),
+          fetch(`${CROP_API}/seller/${phone}`)
+        ]);
+
+        const equipmentData = await equipmentRes.json();
+        const cropData = await cropRes.json();
+
+        // Normalize equipment data
+        const equipmentOrders = equipmentData.success ? equipmentData.data.map(item => ({
+          ...item,
+          listingType: 'equipment',
+          id: item._id
+        })) : [];
+
+        // Normalize crop data
+        const cropOrders = cropData.success ? cropData.data.map(item => ({
+          ...item,
+          listingType: 'crop',
+          id: item._id
+        })) : [];
+
+        allOrders = [...equipmentOrders, ...cropOrders];
+        
+        if (allOrders.length > 0) {
+          displayOrders(allOrders);
+          updateStats(allOrders);
+        } else {
+          showEmptyState();
+        }
+      } catch (error) {
+        console.error('Error loading orders:', error);
+        alert('Failed to load orders. Please try again.');
+        showEmptyState();
+      } finally {
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('ordersContainer').style.display = 'block';
+      }
+    }
+
+    // Display orders
+    function displayOrders(orders) {
+      const container = document.getElementById('ordersContainer');
+      const typeFilter = document.getElementById('typeFilter').value;
+      const statusFilter = document.getElementById('statusFilter').value;
+
+      // Apply filters
+      let filteredOrders = orders;
+      
+      // Tab filter
+      if (currentTab !== 'all') {
+        filteredOrders = filteredOrders.filter(o => o.listingType === currentTab);
+      }
+      
+      // Type filter
+      if (typeFilter !== 'all') {
+        filteredOrders = filteredOrders.filter(o => o.listingType === typeFilter);
+      }
+      
+      // Status filter
+      if (statusFilter) {
+        filteredOrders = filteredOrders.filter(o => o.status === statusFilter);
+      }
+
+      if (filteredOrders.length === 0) {
+        showEmptyState();
+        return;
+      }
+
+      // Sort by created date (newest first)
+      filteredOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      container.innerHTML = filteredOrders.map(order => {
+        if (order.listingType === 'equipment') {
+          return renderEquipmentCard(order);
+        } else {
+          return renderCropCard(order);
+        }
+      }).join('');
+
+      updateTabCounts(filteredOrders);
+    }
+
+    // Render equipment card
+    function renderEquipmentCard(order) {
+      return `
+        <div class="card order-card position-relative">
+          <span class="listing-type-badge equipment-badge">
+            <i class="bi bi-gear me-1"></i>Equipment Request
+          </span>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-8">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div>
+                    <h5 class="card-title mb-1">${order.equipment.name}</h5>
+                    <p class="quotation-number mb-2">${order.quotationNumber}</p>
+                  </div>
+                  <span class="status-badge status-${order.status}">${order.status}</span>
+                </div>
+                
+                <div class="detail-row">
+                  <span><i class="bi bi-tag me-2"></i>Type:</span>
+                  <strong class="text-capitalize">${order.quotationType}</strong>
+                </div>
+                <div class="detail-row">
+                  <span><i class="bi bi-cash me-2"></i>Price:</span>
+                  <strong>${order.quotationType === 'rental' ? order.equipment.rentalPrice : order.equipment.price}</strong>
+                </div>
+                ${order.rentalDuration ? `
+                <div class="detail-row">
+                  <span><i class="bi bi-calendar-range me-2"></i>Duration:</span>
+                  <strong>${order.rentalDuration}</strong>
+                </div>
+                ` : ''}
+                <div class="detail-row">
+                  <span><i class="bi bi-calendar-event me-2"></i>Requested:</span>
+                  <strong>${new Date(order.createdAt).toLocaleDateString('en-IN', { 
+                    day: 'numeric', 
+                    month: 'short', 
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}</strong>
+                </div>
+              </div>
+              
+              <div class="col-md-4 d-flex flex-column justify-content-between">
+                <div class="mb-3">
+                  <small class="text-muted d-block mb-2">Status Progress</small>
+                  <div class="progress" style="height: 8px;">
+                    <div class="progress-bar bg-success" role="progressbar" 
+                         style="width: ${getProgressWidth(order.status)}%" 
+                         aria-valuenow="${getProgressWidth(order.status)}" 
+                         aria-valuemin="0" 
+                         aria-valuemax="100">
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="d-grid gap-2">
+                  <button class="btn btn-outline-success btn-sm" onclick="viewEquipmentDetail('${order.id}')">
+                    <i class="bi bi-eye me-2"></i>View Details
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Render crop card
+    function renderCropCard(order) {
+      return `
+        <div class="card order-card crop-card position-relative">
+          <span class="listing-type-badge crop-badge">
+            <i class="bi bi-flower2 me-1"></i>Crop Selling
+          </span>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-8">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div>
+                    <h5 class="card-title mb-1">${order.crop.name}</h5>
+                    <p class="quotation-number mb-2">${order.listingNumber}</p>
+                  </div>
+                  <span class="status-badge status-${order.status}">${order.status}</span>
+                </div>
+                
+                <div class="detail-row">
+                  <span><i class="bi bi-box-seam me-2"></i>Quantity:</span>
+                  <strong>${order.cropDetails.quantity} Quintals</strong>
+                </div>
+                <div class="detail-row">
+                  <span><i class="bi bi-star me-2"></i>Quality:</span>
+                  <strong class="text-capitalize">${order.cropDetails.quality}</strong>
+                </div>
+                <div class="detail-row">
+                  <span><i class="bi bi-cash me-2"></i>Expected Price:</span>
+                  <strong>₹${order.cropDetails.expectedPrice}/quintal</strong>
+                </div>
+                <div class="detail-row">
+                  <span><i class="bi bi-calendar-event me-2"></i>Listed:</span>
+                  <strong>${new Date(order.createdAt).toLocaleDateString('en-IN', { 
+                    day: 'numeric', 
+                    month: 'short', 
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}</strong>
+                </div>
+              </div>
+              
+              <div class="col-md-4 d-flex flex-column justify-content-between">
+                <div class="mb-3">
+                  <small class="text-muted d-block mb-2">Status Progress</small>
+                  <div class="progress" style="height: 8px;">
+                    <div class="progress-bar bg-warning" role="progressbar" 
+                         style="width: ${getCropProgressWidth(order.status)}%" 
+                         aria-valuenow="${getCropProgressWidth(order.status)}" 
+                         aria-valuemin="0" 
+                         aria-valuemax="100">
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="d-grid gap-2">
+                  <button class="btn btn-outline-warning btn-sm" onclick="viewCropDetail('${order.id}')">
+                    <i class="bi bi-eye me-2"></i>View Details
+                  </button>
+                  ${order.buyerContacts && order.buyerContacts.length > 0 ? `
+                  <span class="badge bg-success">
+                    <i class="bi bi-telephone me-1"></i>${order.buyerContacts.length} Buyer(s) Contacted
+                  </span>
+                  ` : ''}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Filter by tab
+    function filterTab(tab) {
+      currentTab = tab;
+      
+      // Update active button
+      document.querySelectorAll('.tab-pills .btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.add('active');
+      
+      if (allOrders.length > 0) {
+        displayOrders(allOrders);
+      }
+    }
+
+    // Update tab counts
+    function updateTabCounts(filteredOrders) {
+      const equipmentCount = filteredOrders.filter(o => o.listingType === 'equipment').length;
+      const cropCount = filteredOrders.filter(o => o.listingType === 'crop').length;
+
+      document.getElementById('countAll').textContent = filteredOrders.length;
+      document.getElementById('countEquipment').textContent = equipmentCount;
+      document.getElementById('countCrop').textContent = cropCount;
+    }
+
+    // Show empty state
+    function showEmptyState() {
+      const container = document.getElementById('ordersContainer');
+      container.innerHTML = `
+        <div class="empty-state">
+          <i class="bi bi-inbox"></i>
+          <h4 class="text-muted">No Orders Found</h4>
+          <p class="text-muted">You haven't made any requests or listings yet</p>
+          <div class="mt-3">
+            <a href="Equipment.html" class="btn btn-success me-2">
+              <i class="bi bi-plus-circle me-2"></i>Request Equipment
+            </a>
+            <a href="market.html" class="btn btn-warning">
+              <i class="bi bi-flower2 me-2"></i>Sell Crops
+            </a>
+          </div>
+        </div>
+      `;
+    }
+
+    // Update statistics
+    function updateStats(orders) {
+      const equipmentOrders = orders.filter(o => o.listingType === 'equipment');
+      const cropOrders = orders.filter(o => o.listingType === 'crop');
+      
+      document.getElementById('totalItems').textContent = orders.length;
+      document.getElementById('equipmentCount').textContent = equipmentOrders.length;
+      document.getElementById('cropCount').textContent = cropOrders.length;
+      
+      const pendingCount = orders.filter(o => o.status === 'pending' || o.status === 'active').length;
+      const activeCount = orders.filter(o => o.status === 'approved' || o.status === 'active' || o.status === 'contacted').length;
+      const completedCount = orders.filter(o => o.status === 'completed' || o.status === 'sold').length;
+      
+      document.getElementById('pendingCount').textContent = pendingCount;
+      document.getElementById('activeCount').textContent = activeCount;
+      document.getElementById('completedCount').textContent = completedCount;
+
+      updateTabCounts(orders);
+    }
+
+    // Get progress width based on status (Equipment)
+    function getProgressWidth(status) {
+      const progress = {
+        'pending': 20,
+        'contacted': 40,
+        'quoted': 60,
+        'approved': 80,
+        'completed': 100,
+        'rejected': 0
+      };
+      return progress[status] || 0;
+    }
+
+    // Get progress width based on status (Crop)
+    function getCropProgressWidth(status) {
+      const progress = {
+        'active': 25,
+        'contacted': 50,
+        'negotiating': 75,
+        'sold': 100,
+        'cancelled': 0,
+        'expired': 0
+      };
+      return progress[status] || 25;
+    }
+
+    // View equipment detail
+    async function viewEquipmentDetail(orderId) {
+      try {
+        const response = await fetch(`${EQUIPMENT_API}/${orderId}`);
+        const result = await response.json();
+
+        if (result.success) {
+          const order = result.data;
+          document.getElementById('modalTitle').innerHTML = '<i class="bi bi-gear me-2"></i>Equipment Request Details';
+          document.getElementById('orderDetailBody').innerHTML = `
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <h6 class="text-success"><i class="bi bi-gear me-2"></i>Equipment Information</h6>
+                <div class="detail-row">
+                  <span>Name:</span>
+                  <strong>${order.equipment.name}</strong>
+                </div>
+                <div class="detail-row">
+                  <span>Category:</span>
+                  <strong>${order.equipment.category}</strong>
+                </div>
+                <div class="detail-row">
+                  <span>Type:</span>
+                  <strong class="text-capitalize">${order.quotationType}</strong>
+                </div>
+                <div class="detail-row">
+                  <span>Price:</span>
+                  <strong>${order.equipment.price}</strong>
+                </div>
+                ${order.equipment.rentalPrice ? `
+                <div class="detail-row">
+                  <span>Rental Price:</span>
+                  <strong>${order.equipment.rentalPrice}</strong>
+                </div>
+                ` : ''}
+                ${order.equipment.subsidy ? `
+                <div class="detail-row">
+                  <span>Subsidy Available:</span>
+                  <strong>${order.equipment.subsidy}</strong>
+                </div>
+                ` : ''}
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <h6 class="text-success"><i class="bi bi-person me-2"></i>Your Information</h6>
+                <div class="detail-row">
+                  <span>Name:</span>
+                  <strong>${order.customerDetails.name}</strong>
+                </div>
+                <div class="detail-row">
+                  <span>Phone:</span>
+                  <strong>${order.customerDetails.phone}</strong>
+                </div>
+                ${order.customerDetails.email ? `
+                <div class="detail-row">
+                  <span>Email:</span>
+                  <strong>${order.customerDetails.email}</strong>
+                </div>
+                ` : ''}
+                <div class="detail-row">
+                  <span>Location:</span>
+                  <strong>${order.customerDetails.location}</strong>
+                </div>
+                ${order.customerDetails.landSize ? `
+                <div class="detail-row">
+                  <span>Land Size:</span>
+                  <strong>${order.customerDetails.landSize} acres</strong>
+                </div>
+                ` : ''}
+              </div>
+            </div>
+
+            <hr>
+
+            <div class="row">
+              <div class="col-12 mb-3">
+                <h6 class="text-success"><i class="bi bi-clock-history me-2"></i>Status Timeline</h6>
+                <div class="timeline">
+                  <div class="timeline-item">
+                    <strong>Quotation Submitted</strong>
+                    <div class="text-muted small">${new Date(order.createdAt).toLocaleString('en-IN')}</div>
+                  </div>
+                  ${order.status !== 'pending' ? `
+                  <div class="timeline-item">
+                    <strong>Status: ${order.status}</strong>
+                    <div class="text-muted small">${new Date(order.updatedAt).toLocaleString('en-IN')}</div>
+                  </div>
+                  ` : ''}
+                </div>
+              </div>
+            </div>
+
+            ${order.additionalNotes ? `
+            <div class="alert alert-info">
+              <strong><i class="bi bi-info-circle me-2"></i>Your Notes:</strong>
+              <p class="mb-0 mt-2">${order.additionalNotes}</p>
+            </div>
+            ` : ''}
+
+            <div class="alert alert-success">
+              <strong><i class="bi bi-check-circle me-2"></i>Quotation Number:</strong>
+              <p class="mb-0 mt-2 quotation-number">${order.quotationNumber}</p>
+            </div>
+          `;
+
+          new bootstrap.Modal(document.getElementById('orderDetailModal')).show();
+        }
+      } catch (error) {
+        console.error('Error loading equipment details:', error);
+        alert('Failed to load details');
+      }
+    }
+
+    // View crop detail
+    async function viewCropDetail(listingId) {
+      try {
+        const response = await fetch(`${CROP_API}/${listingId}`);
+        const result = await response.json();
+
+        if (result.success) {
+          const listing = result.data;
+          document.getElementById('modalTitle').innerHTML = '<i class="bi bi-flower2 me-2"></i>Crop Listing Details';
+          document.getElementById('orderDetailBody').innerHTML = `
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <h6 class="text-success"><i class="bi bi-flower2 me-2"></i>Crop Information</h6>
+                <div class="detail-row">
+                  <span>Crop Name:</span>
+                  <strong>${listing.crop.name}</strong>
+                </div>
+                <div class="detail-row">
+                  <span>Category:</span>
+                  <strong>${listing.crop.category}</strong>
+                </div>
+                <div class="detail-row">
+                  <span>MSP:</span>
+                  <strong>${listing.crop.msp}/quintal</strong>
+                </div>
+                <div class="detail-row">
+                  <span>Quantity:</span>
+                  <strong>${listing.cropDetails.quantity} Quintals</strong>
+                </div>
+                <div class="detail-row">
+                  <span>Quality:</span>
+                  <strong class="text-capitalize">${listing.cropDetails.quality}</strong>
+                </div>
+                <div class="detail-row">
+                  <span>Expected Price:</span>
+                  <strong>₹${listing.cropDetails.expectedPrice}/quintal</strong>
+                </div>
+                ${listing.cropDetails.harvestDate ? `
+                <div class="detail-row">
+                  <span>Harvest Date:</span>
+                  <strong>${new Date(listing.cropDetails.harvestDate).toLocaleDateString('en-IN')}</strong>
+                </div>
+                ` : ''}
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <h6 class="text-success"><i class="bi bi-person me-2"></i>Your Information</h6>
+                <div class="detail-row">
+                  <span>Name:</span>
+                  <strong>${listing.seller.name}</strong>
+                </div>
+                <div class="detail-row">
+                  <span>Phone:</span>
+                  <strong>${listing.seller.phone}</strong>
+                </div>
+                ${listing.seller.email ? `
+                <div class="detail-row">
+                  <span>Email:</span>
+                  <strong>${listing.seller.email}</strong>
+                </div>
+                ` : ''}
+                <div class="detail-row">
+                  <span>Location:</span>
+                  <strong>${listing.seller.location}</strong>
+                </div>
+
+                <hr>
+
+                <h6 class="text-success"><i class="bi bi-tools me-2"></i>Services Requested</h6>
+                <div class="mb-2">
+                  ${listing.services.transport ? '<span class="badge bg-success me-1"><i class="bi bi-truck me-1"></i>Transport</span>' : ''}
+                  ${listing.services.storage ? '<span class="badge bg-info me-1"><i class="bi bi-box me-1"></i>Storage</span>' : ''}
+                  ${listing.services.qualityTest ? '<span class="badge bg-warning me-1"><i class="bi bi-shield-check me-1"></i>Quality Test</span>' : ''}
+                  ${!listing.services.transport && !listing.services.storage && !listing.services.qualityTest ? '<span class="text-muted">No additional services</span>' : ''}
+                </div>
+              </div>
+            </div>
+
+            ${listing.buyerContacts && listing.buyerContacts.length > 0 ? `
+            <hr>
+            <div class="mb-3">
+              <h6 class="text-success"><i class="bi bi-telephone me-2"></i>Buyer Contacts (${listing.buyerContacts.length})</h6>
+              ${listing.buyerContacts.map(buyer => `
+                <div class="card mb-2">
+                  <div class="card-body py-2">
+                    <div class="row align-items-center">
+                      <div class="col-md-4">
+                        <strong>${buyer.buyerName || 'Anonymous Buyer'}</strong>
+                      </div>
+                      <div class="col-md-4">
+                        <a href="tel:${buyer.buyerPhone}" class="text-success">
+                          <i class="bi bi-telephone me-1"></i>${buyer.buyerPhone}
+                        </a>
+                      </div>
+                      <div class="col-md-4 text-end">
+                        ${buyer.offeredPrice ? `<span class="badge bg-warning">Offered: ₹${buyer.offeredPrice}/qt</span>` : ''}
+                        <small class="text-muted d-block">${new Date(buyer.contactedAt).toLocaleDateString('en-IN')}</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+            ` : ''}
+
+            <hr>
+
+            <div class="row">
+              <div class="col-12 mb-3">
+                <h6 class="text-success"><i class="bi bi-clock-history me-2"></i>Status Timeline</h6>
+                <div class="timeline">
+                  <div class="timeline-item">
+                    <strong>Listing Created</strong>
+                    <div class="text-muted small">${new Date(listing.createdAt).toLocaleString('en-IN')}</div>
+                  </div>
+                  ${listing.status !== 'active' ? `
+                  <div class="timeline-item">
+                    <strong>Status: ${listing.status}</strong>
+                    <div class="text-muted small">${new Date(listing.updatedAt).toLocaleString('en-IN')}</div>
+                  </div>
+                  ` : ''}
+                  ${listing.soldDate ? `
+                  <div class="timeline-item">
+                    <strong>Sold</strong>
+                    <div class="text-muted small">${new Date(listing.soldDate).toLocaleString('en-IN')}</div>
+                    ${listing.finalPrice ? `<div class="text-success">Final Price: ₹${listing.finalPrice}/quintal</div>` : ''}
+                  </div>
+                  ` : ''}
+                </div>
+              </div>
+            </div>
+
+            ${listing.additionalInfo ? `
+            <div class="alert alert-info">
+              <strong><i class="bi bi-info-circle me-2"></i>Your Notes:</strong>
+              <p class="mb-0 mt-2">${listing.additionalInfo}</p>
+            </div>
+            ` : ''}
+
+            <div class="alert alert-success">
+              <strong><i class="bi bi-check-circle me-2"></i>Listing Number:</strong>
+              <p class="mb-0 mt-2 quotation-number">${listing.listingNumber}</p>
+            </div>
+          `;
+
+          new bootstrap.Modal(document.getElementById('orderDetailModal')).show();
+        }
+      } catch (error) {
+        console.error('Error loading crop details:', error);
+        alert('Failed to load details');
+      }
+    }
+
+    // Contact support
+    function contactSupport() {
+      alert('Support Contact:\n\nPhone: +91 9876543210\nEmail: support@krishisarthi.com\nTimings: 9 AM - 6 PM (Mon-Sat)\n\nWe are here to help you!');
+    }
+
+    // Filter change listeners
+    document.getElementById('typeFilter').addEventListener('change', () => {
+      if (allOrders.length > 0) {
+        displayOrders(allOrders);
+      }
+    });
+
+    document.getElementById('statusFilter').addEventListener('change', () => {
+      if (allOrders.length > 0) {
+        displayOrders(allOrders);
+      }
+    });
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      if (confirm('Are you sure you want to logout?')) {
+        localStorage.removeItem('userPhone');
+        window.location.href = 'index.html';
+      }
+    });
+  </script>
+</body>
+</html>

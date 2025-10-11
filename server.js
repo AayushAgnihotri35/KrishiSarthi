@@ -6,7 +6,8 @@ const path = require("path");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
-const quotationRoutes = require("./routes/quotations"); // Add this line
+const quotationRoutes = require("./routes/quotations"); 
+const cropListingRoutes = require("./routes/cropListings"); 
 
 // Connect DB
 connectDB(process.env.MONGO_URI);
@@ -21,7 +22,8 @@ app.use(cors());
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
-app.use("/api/quotations", quotationRoutes); // Add this line
+app.use("/api/quotations", quotationRoutes);
+app.use("/api/crop-listings", cropListingRoutes); 
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
