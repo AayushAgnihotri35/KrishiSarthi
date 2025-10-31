@@ -38,7 +38,7 @@ const quotationSchema = new mongoose.Schema({
   additionalNotes: String,
   status: {
     type: String,
-    enum: ['pending', 'contacted', 'quoted', 'approved', 'rejected', 'completed'],
+    enum: ['pending', 'contacted', 'quoted', 'approved', 'rejected', 'completed', 'cancelled'],
     default: 'pending'
   },
   quotationNumber: {
@@ -52,6 +52,20 @@ const quotationSchema = new mongoose.Schema({
     text: String, 
     addedBy: String, 
     addedAt: Date 
+  }],
+  
+  // NEW FIELDS
+  acceptedBy: String,
+  acceptedAt: Date,
+  acceptedContact: String,
+  cancelledBy: String,
+  cancelledAt: Date,
+  cancelReason: String,
+  statusHistory: [{
+    status: String,
+    changedAt: { type: Date, default: Date.now },
+    changedBy: String,
+    notes: String
   }]
 }, {
   timestamps: true

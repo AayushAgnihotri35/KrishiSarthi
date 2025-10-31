@@ -209,6 +209,10 @@
                 <a class="dropdown-item" href="profile.html">
                   <i class="fas fa-user-circle"></i> My Profile
                 </a>
+                <li>
+                <a class="dropdown-item" href="notifications.html">
+                    <i class="fas fa-bell"></i> Notifications</a>
+            </li>
               </li>
               <li>
                 <a class="dropdown-item" href="orders.html">
@@ -375,6 +379,109 @@
       </div>
     </div>
   </div>
+<!-- Cancel Equipment Modal -->
+<div class="modal fade" id="cancelEquipmentModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">
+          <i class="bi bi-x-circle me-2"></i>Cancel Equipment Request
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="cancelEquipmentForm">
+          <input type="hidden" id="cancelEquipmentId">
+          <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            Are you sure you want to cancel this equipment request?
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Reason for Cancellation</label>
+            <textarea class="form-control" id="equipmentCancelReason" rows="3" placeholder="Optional: Tell us why you're cancelling"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep Request</button>
+        <button type="button" class="btn btn-danger" onclick="confirmCancelEquipment()">
+          <i class="bi bi-x-circle me-2"></i>Cancel Request
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Cancel Crop Listing Modal -->
+<div class="modal fade" id="cancelCropModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">
+          <i class="bi bi-x-circle me-2"></i>Cancel Crop Listing
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="cancelCropForm">
+          <input type="hidden" id="cancelCropId">
+          <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            Are you sure you want to cancel this listing?
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Reason for Cancellation</label>
+            <textarea class="form-control" id="cropCancelReason" rows="3" placeholder="Optional: Tell us why you're cancelling"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep Listing</button>
+        <button type="button" class="btn btn-danger" onclick="confirmCancelCrop()">
+          <i class="bi bi-x-circle me-2"></i>Cancel Listing
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Mark as Sold Modal -->
+<div class="modal fade" id="markSoldModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title">
+          <i class="bi bi-check-circle me-2"></i>Mark Crop as Sold
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="markSoldForm">
+          <input type="hidden" id="soldCropId">
+          <div class="mb-3">
+            <label class="form-label">Sold To (Buyer Name) *</label>
+            <input type="text" class="form-control" id="soldTo" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Final Price (₹/quintal) *</label>
+            <input type="number" class="form-control" id="finalPrice" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Quantity Sold (Quintals)</label>
+            <input type="number" class="form-control" id="soldQuantity" placeholder="Leave empty if entire quantity">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-success" onclick="confirmMarkAsSold()">
+          <i class="bi bi-check-circle me-2"></i>Mark as Sold
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 
   <!-- Order Detail Modal -->
   <div class="modal fade" id="orderDetailModal" tabindex="-1">
@@ -585,17 +692,23 @@
                     </div>
                   </div>
                 </div>
-                
+  
                 <div class="d-grid gap-2">
                   <button class="btn btn-outline-success btn-sm" onclick="viewEquipmentDetail('${order.id}')">
                     <i class="bi bi-eye me-2"></i>View Details
                   </button>
+    
+                  ${order.status !== 'cancelled' && order.status !== 'completed' ? `
+                  <button class="btn btn-outline-danger btn-sm" onclick="cancelEquipment('${order.id}')">
+                    <i class="bi bi-x-circle me-2"></i>Cancel Request
+                  </button>
+                  ` : ''}
                 </div>
               </div>
             </div>
           </div>
         </div>
-      `;
+      `;              
     }
 
     // Render crop card
@@ -652,15 +765,28 @@
                     </div>
                   </div>
                 </div>
-                
+  
                 <div class="d-grid gap-2">
                   <button class="btn btn-outline-warning btn-sm" onclick="viewCropDetail('${order.id}')">
                     <i class="bi bi-eye me-2"></i>View Details
                   </button>
+    
                   ${order.buyerContacts && order.buyerContacts.length > 0 ? `
                   <span class="badge bg-success">
                     <i class="bi bi-telephone me-1"></i>${order.buyerContacts.length} Buyer(s) Contacted
                   </span>
+                  ` : ''}
+    
+                  ${order.status !== 'cancelled' && order.status !== 'sold' ? `
+                  <button class="btn btn-outline-danger btn-sm" onclick="cancelCropListing('${order.id}')">
+                    <i class="bi bi-x-circle me-2"></i>Cancel Listing
+                  </button>
+                  ` : ''}
+    
+                  ${order.status === 'contacted' || order.status === 'negotiating' ? `
+                  <button class="btn btn-success btn-sm" onclick="markAsSold('${order.id}')">
+                    <i class="bi bi-check-circle me-2"></i>Mark as Sold
+                  </button>
                   ` : ''}
                 </div>
               </div>
@@ -1051,6 +1177,129 @@
         window.location.href = 'index.html';
       }
     });
+
+    // Cancel Equipment Request
+function cancelEquipment(id) {
+  document.getElementById('cancelEquipmentId').value = id;
+  document.getElementById('equipmentCancelReason').value = '';
+  new bootstrap.Modal(document.getElementById('cancelEquipmentModal')).show();
+}
+
+async function confirmCancelEquipment() {
+  const id = document.getElementById('cancelEquipmentId').value;
+  const cancelReason = document.getElementById('equipmentCancelReason').value.trim();
+  const userPhone = document.getElementById('phoneInput').value;
+
+  try {
+    const response = await fetch(`${EQUIPMENT_API}/${id}/cancel`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userPhone,
+        cancelReason,
+        cancelledBy: 'Customer'
+      })
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      alert('Request cancelled successfully');
+      bootstrap.Modal.getInstance(document.getElementById('cancelEquipmentModal')).hide();
+      loadAllOrders();
+    } else {
+      alert(result.message || 'Failed to cancel request');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Failed to cancel request. Please try again.');
+  }
+}
+
+// Cancel Crop Listing
+function cancelCropListing(id) {
+  document.getElementById('cancelCropId').value = id;
+  document.getElementById('cropCancelReason').value = '';
+  new bootstrap.Modal(document.getElementById('cancelCropModal')).show();
+}
+
+async function confirmCancelCrop() {
+  const id = document.getElementById('cancelCropId').value;
+  const cancelReason = document.getElementById('cropCancelReason').value.trim();
+  const userPhone = document.getElementById('phoneInput').value;
+
+  try {
+    const response = await fetch(`${CROP_API}/${id}/cancel`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userPhone,
+        cancelReason
+      })
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      alert('Listing cancelled successfully');
+      bootstrap.Modal.getInstance(document.getElementById('cancelCropModal')).hide();
+      loadAllOrders();
+    } else {
+      alert(result.message || 'Failed to cancel listing');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Failed to cancel listing. Please try again.');
+  }
+}
+
+// Mark Crop as Sold
+function markAsSold(id) {
+  document.getElementById('soldCropId').value = id;
+  document.getElementById('soldTo').value = '';
+  document.getElementById('finalPrice').value = '';
+  document.getElementById('soldQuantity').value = '';
+  new bootstrap.Modal(document.getElementById('markSoldModal')).show();
+}
+
+async function confirmMarkAsSold() {
+  const id = document.getElementById('soldCropId').value;
+  const soldTo = document.getElementById('soldTo').value.trim();
+  const finalPrice = document.getElementById('finalPrice').value;
+  const soldQuantity = document.getElementById('soldQuantity').value;
+  const userPhone = document.getElementById('phoneInput').value;
+
+  if (!soldTo || !finalPrice) {
+    alert('Please fill all required fields');
+    return;
+  }
+
+  try {
+    const response = await fetch(`${CROP_API}/${id}/sold`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userPhone,
+        soldTo,
+        finalPrice: parseFloat(finalPrice),
+        soldQuantity: soldQuantity ? parseFloat(soldQuantity) : null
+      })
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      alert('Crop marked as sold successfully!');
+      bootstrap.Modal.getInstance(document.getElementById('markSoldModal')).hide();
+      loadAllOrders();
+    } else {
+      alert(result.message || 'Failed to mark as sold');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Failed to mark as sold. Please try again.');
+  }
+}
   </script>
 </body>
 </html>

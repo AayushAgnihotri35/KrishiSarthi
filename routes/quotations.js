@@ -1,9 +1,8 @@
-// routes/quotations.js
 const express = require('express');
 const router = express.Router();
-const Quotation = require('../models/Quotation'); // We'll create this
+const Quotation = require('../models/quotation');
 
-// Create new quotation
+// Create new quotation (if you don't have this already)
 router.post('/', async (req, res) => {
   try {
     const quotation = new Quotation(req.body);
@@ -11,14 +10,14 @@ router.post('/', async (req, res) => {
     
     res.status(201).json({
       success: true,
-      message: 'Quotation submitted successfully',
+      message: 'Quotation created successfully',
       data: quotation
     });
   } catch (error) {
     console.error('Error creating quotation:', error);
     res.status(400).json({
       success: false,
-      message: 'Failed to submit quotation',
+      message: 'Failed to create quotation',
       error: error.message
     });
   }
@@ -27,19 +26,10 @@ router.post('/', async (req, res) => {
 // Get all quotations
 router.get('/', async (req, res) => {
   try {
-    const { status, type, page = 1, limit = 10, search } = req.query;
+    const { status, page = 1, limit = 100 } = req.query;
     
     const filter = {};
     if (status) filter.status = status;
-    if (type) filter.quotationType = type;
-    if (search) {
-      filter.$or = [
-        { 'customerDetails.name': new RegExp(search, 'i') },
-        { 'customerDetails.phone': new RegExp(search, 'i') },
-        { 'equipment.name': new RegExp(search, 'i') },
-        { quotationNumber: new RegExp(search, 'i') }
-      ];
-    }
 
     const quotations = await Quotation.find(filter)
       .sort({ createdAt: -1 })
@@ -67,7 +57,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get quotations by phone number
+// Get quotations by phone number (customer's own quotations)
 router.get('/customer/:phone', async (req, res) => {
   try {
     const quotations = await Quotation.find({ 
@@ -115,23 +105,18 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Update quotation status
-router.patch('/:id/status', async (req, res) => {
-  try {
-    const { status, assignedTo, estimatedPrice, finalPrice } = req.body;
-    
-    const quotation = await Quotation.findByIdAndUpdate(
-      req.params.id,
-      { 
-        status,
-        assignedTo,
-        estimatedPrice,
-        finalPrice,
-        updatedAt: new Date()
-      },
-      { new: true, runValidators: true }
-    );
+// ============================================
+// ACCEPT & CANCEL ROUTES (NEW FUNCTIONALITY)
+// ============================================
 
+// Accept Equipment Quotation
+router.patch('/:id/accept', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { acceptedBy, contactNumber, supplierName } = req.body;
+
+    const quotation = await Quotation.findById(id);
+    
     if (!quotation) {
       return res.status(404).json({
         success: false,
@@ -139,25 +124,53 @@ router.patch('/:id/status', async (req, res) => {
       });
     }
 
+    if (quotation.status === 'completed' || quotation.status === 'cancelled' || quotation.status === 'approved') {
+      return res.status(400).json({
+        success: false,
+        message: 'Quotation cannot be accepted'
+      });
+    }
+
+    quotation.status = 'approved';
+    quotation.acceptedBy = acceptedBy || supplierName;
+    quotation.acceptedAt = new Date();
+    quotation.acceptedContact = contactNumber;
+    
+    if (!quotation.statusHistory) {
+      quotation.statusHistory = [];
+    }
+    quotation.statusHistory.push({
+      status: 'approved',
+      changedAt: new Date(),
+      changedBy: acceptedBy || supplierName,
+      notes: `Quotation accepted by ${supplierName}. Contact: ${contactNumber}`
+    });
+
+    await quotation.save();
+
     res.json({
       success: true,
-      message: 'Quotation updated successfully',
+      message: 'Quotation accepted successfully',
       data: quotation
     });
+
   } catch (error) {
-    console.error('Error updating quotation:', error);
-    res.status(400).json({
+    console.error('Error accepting quotation:', error);
+    res.status(500).json({
       success: false,
-      message: 'Failed to update quotation',
+      message: 'Failed to accept quotation',
       error: error.message
     });
   }
 });
 
-// Delete quotation
-router.delete('/:id', async (req, res) => {
+// Cancel Equipment Quotation
+router.patch('/:id/cancel', async (req, res) => {
   try {
-    const quotation = await Quotation.findByIdAndDelete(req.params.id);
+    const { id } = req.params;
+    const { cancelledBy, cancelReason, userPhone } = req.body;
+
+    const quotation = await Quotation.findById(id);
     
     if (!quotation) {
       return res.status(404).json({
@@ -166,52 +179,49 @@ router.delete('/:id', async (req, res) => {
       });
     }
 
-    res.json({
-      success: true,
-      message: 'Quotation deleted successfully'
-    });
-  } catch (error) {
-    console.error('Error deleting quotation:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to delete quotation',
-      error: error.message
-    });
-  }
-});
+    // Verify user is the owner
+    if (quotation.customerDetails.phone !== userPhone) {
+      return res.status(403).json({
+        success: false,
+        message: 'Unauthorized to cancel this quotation'
+      });
+    }
 
-// Get dashboard statistics
-router.get('/stats/dashboard', async (req, res) => {
-  try {
-    const totalQuotations = await Quotation.countDocuments();
-    const pendingQuotations = await Quotation.countDocuments({ status: 'pending' });
-    const approvedQuotations = await Quotation.countDocuments({ status: 'approved' });
-    const completedQuotations = await Quotation.countDocuments({ status: 'completed' });
+    if (quotation.status === 'completed' || quotation.status === 'cancelled') {
+      return res.status(400).json({
+        success: false,
+        message: 'Quotation is already completed or cancelled'
+      });
+    }
+
+    quotation.status = 'cancelled';
+    quotation.cancelledBy = cancelledBy;
+    quotation.cancelledAt = new Date();
+    quotation.cancelReason = cancelReason;
     
-    const purchaseCount = await Quotation.countDocuments({ quotationType: 'purchase' });
-    const rentalCount = await Quotation.countDocuments({ quotationType: 'rental' });
+    if (!quotation.statusHistory) {
+      quotation.statusHistory = [];
+    }
+    quotation.statusHistory.push({
+      status: 'cancelled',
+      changedAt: new Date(),
+      changedBy: cancelledBy,
+      notes: cancelReason || 'Quotation cancelled by customer'
+    });
 
-    const recentQuotations = await Quotation.find()
-      .sort({ createdAt: -1 })
-      .limit(5);
+    await quotation.save();
 
     res.json({
       success: true,
-      data: {
-        total: totalQuotations,
-        pending: pendingQuotations,
-        approved: approvedQuotations,
-        completed: completedQuotations,
-        purchase: purchaseCount,
-        rental: rentalCount,
-        recent: recentQuotations
-      }
+      message: 'Quotation cancelled successfully',
+      data: quotation
     });
+
   } catch (error) {
-    console.error('Error fetching statistics:', error);
+    console.error('Error cancelling quotation:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch statistics',
+      message: 'Failed to cancel quotation',
       error: error.message
     });
   }

@@ -58,6 +58,17 @@ const cropListingSchema = new mongoose.Schema({
     text: String, 
     addedBy: String, 
     addedAt: Date 
+  }],
+  
+  // NEW FIELDS
+  soldTo: String,
+  soldQuantity: Number,
+  cancelledAt: Date,
+  cancelReason: String,
+  statusHistory: [{
+    status: String,
+    changedAt: { type: Date, default: Date.now },
+    notes: String
   }]
 }, {
   timestamps: true

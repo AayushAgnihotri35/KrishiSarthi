@@ -1,4 +1,3 @@
-// routes/cropListings.js
 const express = require('express');
 const router = express.Router();
 const CropListing = require('../models/CropListing');
@@ -27,7 +26,7 @@ router.post('/', async (req, res) => {
 // Get all crop listings
 router.get('/', async (req, res) => {
   try {
-    const { status, crop, quality, page = 1, limit = 10, search } = req.query;
+    const { status, crop, quality, page = 1, limit = 100, search } = req.query;
     
     const filter = {};
     if (status) filter.status = status;
@@ -231,7 +230,6 @@ router.get('/stats/dashboard', async (req, res) => {
     const soldListings = await CropListing.countDocuments({ status: 'sold' });
     const negotiatingListings = await CropListing.countDocuments({ status: 'negotiating' });
     
-    // Get total quantity available
     const quantityResult = await CropListing.aggregate([
       { $match: { status: 'active' } },
       { $group: { _id: null, totalQuantity: { $sum: '$cropDetails.quantity' } } }
@@ -258,6 +256,207 @@ router.get('/stats/dashboard', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch statistics',
+      error: error.message
+    });
+  }
+});
+
+// ============================================
+// ACCEPT, SOLD & CANCEL ROUTES (NEW FUNCTIONALITY)
+// ============================================
+
+// Accept Crop Listing (Buyer expresses interest)
+router.post('/:id/accept', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { buyerName, buyerPhone, offeredPrice } = req.body;
+
+    const listing = await CropListing.findById(id);
+    
+    if (!listing) {
+      return res.status(404).json({
+        success: false,
+        message: 'Crop listing not found'
+      });
+    }
+
+    if (listing.status !== 'active' && listing.status !== 'contacted') {
+      return res.status(400).json({
+        success: false,
+        message: 'Listing is not available for purchase'
+      });
+    }
+
+    if (!listing.buyerContacts) {
+      listing.buyerContacts = [];
+    }
+
+    const existingBuyer = listing.buyerContacts.find(
+      b => b.buyerPhone === buyerPhone
+    );
+
+    if (existingBuyer) {
+      return res.status(400).json({
+        success: false,
+        message: 'You have already expressed interest in this listing'
+      });
+    }
+
+    listing.buyerContacts.push({
+      buyerName,
+      buyerPhone,
+      offeredPrice,
+      contactedAt: new Date()
+    });
+
+    if (listing.status === 'active') {
+      listing.status = 'contacted';
+    }
+
+    if (!listing.statusHistory) {
+      listing.statusHistory = [];
+    }
+    listing.statusHistory.push({
+      status: 'contacted',
+      changedAt: new Date(),
+      notes: `Buyer ${buyerName} showed interest. Offered price: ₹${offeredPrice}/quintal`
+    });
+
+    await listing.save();
+
+    res.json({
+      success: true,
+      message: 'Interest registered successfully. Seller will contact you soon.',
+      data: listing
+    });
+
+  } catch (error) {
+    console.error('Error accepting crop listing:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to register interest',
+      error: error.message
+    });
+  }
+});
+
+// Mark Crop as Sold
+router.patch('/:id/sold', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { soldTo, finalPrice, soldQuantity, userPhone } = req.body;
+
+    const listing = await CropListing.findById(id);
+    
+    if (!listing) {
+      return res.status(404).json({
+        success: false,
+        message: 'Crop listing not found'
+      });
+    }
+
+    if (listing.seller.phone !== userPhone) {
+      return res.status(403).json({
+        success: false,
+        message: 'Unauthorized to update this listing'
+      });
+    }
+
+    if (listing.status === 'sold' || listing.status === 'cancelled') {
+      return res.status(400).json({
+        success: false,
+        message: 'Listing is already sold or cancelled'
+      });
+    }
+
+    listing.status = 'sold';
+    listing.soldTo = soldTo;
+    listing.soldDate = new Date();
+    listing.finalPrice = finalPrice;
+    listing.soldQuantity = soldQuantity || listing.cropDetails.quantity;
+    
+    if (!listing.statusHistory) {
+      listing.statusHistory = [];
+    }
+    listing.statusHistory.push({
+      status: 'sold',
+      changedAt: new Date(),
+      notes: `Sold to ${soldTo} at ₹${finalPrice}/quintal`
+    });
+
+    await listing.save();
+
+    res.json({
+      success: true,
+      message: 'Crop marked as sold successfully',
+      data: listing
+    });
+
+  } catch (error) {
+    console.error('Error marking crop as sold:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to mark crop as sold',
+      error: error.message
+    });
+  }
+});
+
+// Cancel Crop Listing
+router.patch('/:id/cancel', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { cancelReason, userPhone } = req.body;
+
+    const listing = await CropListing.findById(id);
+    
+    if (!listing) {
+      return res.status(404).json({
+        success: false,
+        message: 'Crop listing not found'
+      });
+    }
+
+    if (listing.seller.phone !== userPhone) {
+      return res.status(403).json({
+        success: false,
+        message: 'Unauthorized to cancel this listing'
+      });
+    }
+
+    if (listing.status === 'sold' || listing.status === 'cancelled') {
+      return res.status(400).json({
+        success: false,
+        message: 'Listing is already sold or cancelled'
+      });
+    }
+
+    listing.status = 'cancelled';
+    listing.cancelledAt = new Date();
+    listing.cancelReason = cancelReason;
+    
+    if (!listing.statusHistory) {
+      listing.statusHistory = [];
+    }
+    listing.statusHistory.push({
+      status: 'cancelled',
+      changedAt: new Date(),
+      notes: cancelReason || 'Listing cancelled by seller'
+    });
+
+    await listing.save();
+
+    res.json({
+      success: true,
+      message: 'Crop listing cancelled successfully',
+      data: listing
+    });
+
+  } catch (error) {
+    console.error('Error cancelling crop listing:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to cancel crop listing',
       error: error.message
     });
   }
