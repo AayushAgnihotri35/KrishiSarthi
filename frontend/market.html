@@ -449,77 +449,125 @@
     }
 
     // Submit sell listing
-    document.getElementById('submitSell').addEventListener('click', async function() {
-      const form = document.getElementById('sellerForm');
-      
-      if (form.checkValidity()) {
-        const submitBtn = this;
-        const originalText = submitBtn.innerHTML;
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>Submitting...';
+    // Submit sell listing - WITH AUTHENTICATION
+document.getElementById('submitSell').addEventListener('click', async function() {
+  // ✅ CHECK IF USER IS LOGGED IN
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert('Please login to create a crop listing');
+    // Save form data for after login
+    const formData = new FormData(document.getElementById('sellerForm'));
+    localStorage.setItem('pendingCropListing', JSON.stringify(Object.fromEntries(formData)));
+    window.location.href = 'Login.html';
+    return;
+  }
 
-        const sellingData = {
-          crop: {
-            name: currentCropData.name,
-            category: currentCropData.category,
-            msp: currentCropData.price
-          },
-          seller: {
-            name: document.getElementById('sellerName').value,
-            phone: document.getElementById('sellerPhone').value,
-            email: document.getElementById('sellerEmail').value || null,
-            location: document.getElementById('sellerLocation').value
-          },
-          cropDetails: {
-            quantity: document.getElementById('quantity').value,
-            quality: document.getElementById('quality').value,
-            expectedPrice: document.getElementById('expectedPrice').value,
-            harvestDate: document.getElementById('harvestDate').value || null
-          },
-          services: {
-            transport: document.getElementById('transportNeeded').checked,
-            storage: document.getElementById('storageNeeded').checked,
-            qualityTest: document.getElementById('qualityTest').checked
-          },
-          additionalInfo: document.getElementById('additionalInfo').value || null,
-          status: 'active',
-          createdAt: new Date().toISOString()
-        };
+  const form = document.getElementById('sellerForm');
+  
+  if (form.checkValidity()) {
+    const submitBtn = this;
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>Submitting...';
 
-        try {
-          // Send data to your backend API
-          const response = await fetch('http://localhost:5000/api/crop-listings', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(sellingData)
-          });
+    const sellingData = {
+      crop: {
+        name: currentCropData.name,
+        category: currentCropData.category,
+        msp: currentCropData.price
+      },
+      seller: {
+        name: document.getElementById('sellerName').value,
+        phone: document.getElementById('sellerPhone').value,
+        email: document.getElementById('sellerEmail').value || null,
+        location: document.getElementById('sellerLocation').value
+      },
+      cropDetails: {
+        quantity: parseFloat(document.getElementById('quantity').value),
+        quality: document.getElementById('quality').value,
+        expectedPrice: parseFloat(document.getElementById('expectedPrice').value),
+        harvestDate: document.getElementById('harvestDate').value || null
+      },
+      services: {
+        transport: document.getElementById('transportNeeded').checked,
+        storage: document.getElementById('storageNeeded').checked,
+        qualityTest: document.getElementById('qualityTest').checked
+      },
+      additionalInfo: document.getElementById('additionalInfo').value || null
+    };
 
-          if (!response.ok) {
-            throw new Error('Failed to submit listing');
-          }
+    try {
+      // ✅ SEND WITH AUTHENTICATION HEADERS
+      const response = await fetch('http://localhost:5000/api/crop-listings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`  // ✅ ADD AUTH TOKEN
+        },
+        body: JSON.stringify(sellingData)
+      });
 
-          const result = await response.json();
-          console.log('Crop listing saved successfully:', result);
-
-          // Show success message
-          document.getElementById('sellForm').style.display = 'none';
-          document.getElementById('successMessage').style.display = 'block';
-          document.getElementById('modalFooter').style.display = 'none';
-
-        } catch (error) {
-          console.error('Error submitting listing:', error);
-          alert('Failed to submit listing. Please try again or contact support.');
-          
-          // Re-enable button
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = originalText;
-        }
-      } else {
-        form.reportValidity();
+      // ✅ CHECK FOR AUTH ERRORS
+      if (response.status === 401) {
+        alert('Session expired. Please login again');
+        localStorage.removeItem('token');
+        localStorage.removeItem('username');
+        localStorage.removeItem('fullname');
+        window.location.href = 'Login.html';
+        return;
       }
-    });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit listing');
+      }
+
+      const result = await response.json();
+      console.log('Crop listing saved successfully:', result);
+
+      // Show success message
+      document.getElementById('sellForm').style.display = 'none';
+      document.getElementById('successMessage').style.display = 'block';
+      document.getElementById('modalFooter').style.display = 'none';
+
+    } catch (error) {
+      console.error('Error submitting listing:', error);
+      alert('Failed to submit listing. Please try again or contact support.');
+      
+      // Re-enable button
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalText;
+    }
+  } else {
+    form.reportValidity();
+  }
+});
+
+// ✅ ADD THIS NEW CODE AT THE END
+
+// Optional: Show user info in navbar if logged in
+document.addEventListener('DOMContentLoaded', () => {
+  const token = localStorage.getItem('token');
+  const username = localStorage.getItem('username');
+  
+  if (token && username) {
+    // Update navbar to show logged in state
+    const profileDropdown = document.querySelector('.profile-dropdown');
+    if (profileDropdown) {
+      profileDropdown.style.display = 'block';
+    }
+  }
+});
+
+// Handle logout
+document.getElementById('logoutBtn').addEventListener('click', (e) => {
+  e.preventDefault();
+  if (confirm('Are you sure you want to logout?')) {
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    localStorage.removeItem('fullname');
+    window.location.href = 'Login.html';
+  }
+});
   </script>
 </body>
 </html>

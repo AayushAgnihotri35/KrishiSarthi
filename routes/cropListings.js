@@ -1,11 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const CropListing = require('../models/CropListing');
+const auth = require('../middleware/auth');
 
-// Create new crop listing
-router.post('/', async (req, res) => {
+// Create new crop listing - PROTECTED
+router.post('/', auth, async (req, res) => {
   try {
-    const listing = new CropListing(req.body);
+    const listing = new CropListing({
+      ...req.body,
+      userId: req.user.id
+    });
     await listing.save();
     
     res.status(201).json({
@@ -23,7 +27,41 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Get all crop listings
+// Get current user's crop listings - PROTECTED
+router.get('/my-listings', auth, async (req, res) => {
+  try {
+    const { status, page = 1, limit = 100 } = req.query;
+    
+    const filter = { userId: req.user.id };
+    if (status) filter.status = status;
+
+    const listings = await CropListing.find(filter)
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+
+    const total = await CropListing.countDocuments(filter);
+
+    res.json({
+      success: true,
+      data: listings,
+      pagination: {
+        total,
+        page: parseInt(page),
+        pages: Math.ceil(total / limit)
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching crop listings:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch listings',
+      error: error.message
+    });
+  }
+});
+
+// Get all crop listings (public - for marketplace)
 router.get('/', async (req, res) => {
   try {
     const { status, crop, quality, page = 1, limit = 100, search } = req.query;
@@ -67,7 +105,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get listings by phone number (seller's own listings)
+// Get listings by phone number (for backward compatibility/notifications)
 router.get('/seller/:phone', async (req, res) => {
   try {
     const listings = await CropListing.find({ 
@@ -89,15 +127,18 @@ router.get('/seller/:phone', async (req, res) => {
   }
 });
 
-// Get single listing
-router.get('/:id', async (req, res) => {
+// Get single listing - PROTECTED (user can only view their own)
+router.get('/:id', auth, async (req, res) => {
   try {
-    const listing = await CropListing.findById(req.params.id);
+    const listing = await CropListing.findOne({
+      _id: req.params.id,
+      userId: req.user.id
+    });
     
     if (!listing) {
       return res.status(404).json({
         success: false,
-        message: 'Listing not found'
+        message: 'Listing not found or unauthorized'
       });
     }
 
@@ -153,7 +194,7 @@ router.patch('/:id/status', async (req, res) => {
   }
 });
 
-// Add buyer contact to listing
+// Add buyer contact to listing (no auth needed for buyers)
 router.post('/:id/buyer-contact', async (req, res) => {
   try {
     const { buyerName, buyerPhone, offeredPrice } = req.body;
@@ -196,15 +237,18 @@ router.post('/:id/buyer-contact', async (req, res) => {
   }
 });
 
-// Delete listing
-router.delete('/:id', async (req, res) => {
+// Delete listing - PROTECTED
+router.delete('/:id', auth, async (req, res) => {
   try {
-    const listing = await CropListing.findByIdAndDelete(req.params.id);
+    const listing = await CropListing.findOneAndDelete({
+      _id: req.params.id,
+      userId: req.user.id
+    });
     
     if (!listing) {
       return res.status(404).json({
         success: false,
-        message: 'Listing not found'
+        message: 'Listing not found or unauthorized'
       });
     }
 
@@ -222,21 +266,23 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// Get dashboard statistics
-router.get('/stats/dashboard', async (req, res) => {
+// Get dashboard statistics - PROTECTED
+router.get('/stats/dashboard', auth, async (req, res) => {
   try {
-    const totalListings = await CropListing.countDocuments();
-    const activeListings = await CropListing.countDocuments({ status: 'active' });
-    const soldListings = await CropListing.countDocuments({ status: 'sold' });
-    const negotiatingListings = await CropListing.countDocuments({ status: 'negotiating' });
+    const filter = { userId: req.user.id };
+    
+    const totalListings = await CropListing.countDocuments(filter);
+    const activeListings = await CropListing.countDocuments({ ...filter, status: 'active' });
+    const soldListings = await CropListing.countDocuments({ ...filter, status: 'sold' });
+    const negotiatingListings = await CropListing.countDocuments({ ...filter, status: 'negotiating' });
     
     const quantityResult = await CropListing.aggregate([
-      { $match: { status: 'active' } },
+      { $match: { ...filter, status: 'active' } },
       { $group: { _id: null, totalQuantity: { $sum: '$cropDetails.quantity' } } }
     ]);
     const totalQuantity = quantityResult.length > 0 ? quantityResult[0].totalQuantity : 0;
 
-    const recentListings = await CropListing.find()
+    const recentListings = await CropListing.find(filter)
       .sort({ createdAt: -1 })
       .limit(5);
 
@@ -265,7 +311,7 @@ router.get('/stats/dashboard', async (req, res) => {
 // ACCEPT, SOLD & CANCEL ROUTES (NEW FUNCTIONALITY)
 // ============================================
 
-// Accept Crop Listing (Buyer expresses interest)
+// Accept Crop Listing (Buyer expresses interest - no auth needed)
 router.post('/:id/accept', async (req, res) => {
   try {
     const { id } = req.params;
@@ -340,25 +386,21 @@ router.post('/:id/accept', async (req, res) => {
   }
 });
 
-// Mark Crop as Sold
-router.patch('/:id/sold', async (req, res) => {
+// Mark Crop as Sold - PROTECTED
+router.patch('/:id/sold', auth, async (req, res) => {
   try {
     const { id } = req.params;
-    const { soldTo, finalPrice, soldQuantity, userPhone } = req.body;
+    const { soldTo, finalPrice, soldQuantity } = req.body;
 
-    const listing = await CropListing.findById(id);
+    const listing = await CropListing.findOne({
+      _id: id,
+      userId: req.user.id
+    });
     
     if (!listing) {
       return res.status(404).json({
         success: false,
-        message: 'Crop listing not found'
-      });
-    }
-
-    if (listing.seller.phone !== userPhone) {
-      return res.status(403).json({
-        success: false,
-        message: 'Unauthorized to update this listing'
+        message: 'Crop listing not found or unauthorized'
       });
     }
 
@@ -402,25 +444,21 @@ router.patch('/:id/sold', async (req, res) => {
   }
 });
 
-// Cancel Crop Listing
-router.patch('/:id/cancel', async (req, res) => {
+// Cancel Crop Listing - PROTECTED
+router.patch('/:id/cancel', auth, async (req, res) => {
   try {
     const { id } = req.params;
-    const { cancelReason, userPhone } = req.body;
+    const { cancelReason } = req.body;
 
-    const listing = await CropListing.findById(id);
+    const listing = await CropListing.findOne({
+      _id: id,
+      userId: req.user.id
+    });
     
     if (!listing) {
       return res.status(404).json({
         success: false,
-        message: 'Crop listing not found'
-      });
-    }
-
-    if (listing.seller.phone !== userPhone) {
-      return res.status(403).json({
-        success: false,
-        message: 'Unauthorized to cancel this listing'
+        message: 'Crop listing not found or unauthorized'
       });
     }
 

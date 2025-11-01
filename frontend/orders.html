@@ -521,664 +521,724 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   
   <script>
-    const EQUIPMENT_API = 'http://localhost:5000/api/quotations';
-    const CROP_API = 'http://localhost:5000/api/crop-listings';
-    let allOrders = [];
-    let currentTab = 'all';
+   const EQUIPMENT_API = 'http://localhost:5000/api/quotations';
+const CROP_API = 'http://localhost:5000/api/crop-listings';
+let allOrders = [];
+let currentTab = 'all';
 
-    // Load orders on page load if phone number is stored
-    window.addEventListener('DOMContentLoaded', () => {
-      const storedPhone = localStorage.getItem('userPhone');
-      if (storedPhone) {
-        document.getElementById('phoneInput').value = storedPhone;
-        loadAllOrders();
-      }
-    });
-
-    // Load all orders (equipment + crops)
-    async function loadAllOrders() {
-      const phone = document.getElementById('phoneInput').value.trim();
-      
-      if (!phone || phone.length !== 10) {
-        alert('Please enter a valid 10-digit phone number');
-        return;
-      }
-
-      // Save phone for future use
-      localStorage.setItem('userPhone', phone);
-
-      // Show loading
-      document.getElementById('loadingState').style.display = 'flex';
-      document.getElementById('ordersContainer').style.display = 'none';
-
-      try {
-        // Fetch both equipment and crop data
-        const [equipmentRes, cropRes] = await Promise.all([
-          fetch(`${EQUIPMENT_API}/customer/${phone}`),
-          fetch(`${CROP_API}/seller/${phone}`)
-        ]);
-
-        const equipmentData = await equipmentRes.json();
-        const cropData = await cropRes.json();
-
-        // Normalize equipment data
-        const equipmentOrders = equipmentData.success ? equipmentData.data.map(item => ({
-          ...item,
-          listingType: 'equipment',
-          id: item._id
-        })) : [];
-
-        // Normalize crop data
-        const cropOrders = cropData.success ? cropData.data.map(item => ({
-          ...item,
-          listingType: 'crop',
-          id: item._id
-        })) : [];
-
-        allOrders = [...equipmentOrders, ...cropOrders];
-        
-        if (allOrders.length > 0) {
-          displayOrders(allOrders);
-          updateStats(allOrders);
-        } else {
-          showEmptyState();
-        }
-      } catch (error) {
-        console.error('Error loading orders:', error);
-        alert('Failed to load orders. Please try again.');
-        showEmptyState();
-      } finally {
-        document.getElementById('loadingState').style.display = 'none';
-        document.getElementById('ordersContainer').style.display = 'block';
-      }
-    }
-
-    // Display orders
-    function displayOrders(orders) {
-      const container = document.getElementById('ordersContainer');
-      const typeFilter = document.getElementById('typeFilter').value;
-      const statusFilter = document.getElementById('statusFilter').value;
-
-      // Apply filters
-      let filteredOrders = orders;
-      
-      // Tab filter
-      if (currentTab !== 'all') {
-        filteredOrders = filteredOrders.filter(o => o.listingType === currentTab);
-      }
-      
-      // Type filter
-      if (typeFilter !== 'all') {
-        filteredOrders = filteredOrders.filter(o => o.listingType === typeFilter);
-      }
-      
-      // Status filter
-      if (statusFilter) {
-        filteredOrders = filteredOrders.filter(o => o.status === statusFilter);
-      }
-
-      if (filteredOrders.length === 0) {
-        showEmptyState();
-        return;
-      }
-
-      // Sort by created date (newest first)
-      filteredOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-      container.innerHTML = filteredOrders.map(order => {
-        if (order.listingType === 'equipment') {
-          return renderEquipmentCard(order);
-        } else {
-          return renderCropCard(order);
-        }
-      }).join('');
-
-      updateTabCounts(filteredOrders);
-    }
-
-    // Render equipment card
-    function renderEquipmentCard(order) {
-      return `
-        <div class="card order-card position-relative">
-          <span class="listing-type-badge equipment-badge">
-            <i class="bi bi-gear me-1"></i>Equipment Request
-          </span>
-          <div class="card-body">
-            <div class="row">
-              <div class="col-md-8">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                  <div>
-                    <h5 class="card-title mb-1">${order.equipment.name}</h5>
-                    <p class="quotation-number mb-2">${order.quotationNumber}</p>
-                  </div>
-                  <span class="status-badge status-${order.status}">${order.status}</span>
-                </div>
-                
-                <div class="detail-row">
-                  <span><i class="bi bi-tag me-2"></i>Type:</span>
-                  <strong class="text-capitalize">${order.quotationType}</strong>
-                </div>
-                <div class="detail-row">
-                  <span><i class="bi bi-cash me-2"></i>Price:</span>
-                  <strong>${order.quotationType === 'rental' ? order.equipment.rentalPrice : order.equipment.price}</strong>
-                </div>
-                ${order.rentalDuration ? `
-                <div class="detail-row">
-                  <span><i class="bi bi-calendar-range me-2"></i>Duration:</span>
-                  <strong>${order.rentalDuration}</strong>
-                </div>
-                ` : ''}
-                <div class="detail-row">
-                  <span><i class="bi bi-calendar-event me-2"></i>Requested:</span>
-                  <strong>${new Date(order.createdAt).toLocaleDateString('en-IN', { 
-                    day: 'numeric', 
-                    month: 'short', 
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}</strong>
-                </div>
-              </div>
-              
-              <div class="col-md-4 d-flex flex-column justify-content-between">
-                <div class="mb-3">
-                  <small class="text-muted d-block mb-2">Status Progress</small>
-                  <div class="progress" style="height: 8px;">
-                    <div class="progress-bar bg-success" role="progressbar" 
-                         style="width: ${getProgressWidth(order.status)}%" 
-                         aria-valuenow="${getProgressWidth(order.status)}" 
-                         aria-valuemin="0" 
-                         aria-valuemax="100">
-                    </div>
-                  </div>
-                </div>
+// Check authentication on page load
+window.addEventListener('DOMContentLoaded', () => {
+  const token = localStorage.getItem('token');
   
-                <div class="d-grid gap-2">
-                  <button class="btn btn-outline-success btn-sm" onclick="viewEquipmentDetail('${order.id}')">
-                    <i class="bi bi-eye me-2"></i>View Details
-                  </button>
-    
-                  ${order.status !== 'cancelled' && order.status !== 'completed' ? `
-                  <button class="btn btn-outline-danger btn-sm" onclick="cancelEquipment('${order.id}')">
-                    <i class="bi bi-x-circle me-2"></i>Cancel Request
-                  </button>
-                  ` : ''}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;              
-    }
-
-    // Render crop card
-    function renderCropCard(order) {
-      return `
-        <div class="card order-card crop-card position-relative">
-          <span class="listing-type-badge crop-badge">
-            <i class="bi bi-flower2 me-1"></i>Crop Selling
-          </span>
-          <div class="card-body">
-            <div class="row">
-              <div class="col-md-8">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                  <div>
-                    <h5 class="card-title mb-1">${order.crop.name}</h5>
-                    <p class="quotation-number mb-2">${order.listingNumber}</p>
-                  </div>
-                  <span class="status-badge status-${order.status}">${order.status}</span>
-                </div>
-                
-                <div class="detail-row">
-                  <span><i class="bi bi-box-seam me-2"></i>Quantity:</span>
-                  <strong>${order.cropDetails.quantity} Quintals</strong>
-                </div>
-                <div class="detail-row">
-                  <span><i class="bi bi-star me-2"></i>Quality:</span>
-                  <strong class="text-capitalize">${order.cropDetails.quality}</strong>
-                </div>
-                <div class="detail-row">
-                  <span><i class="bi bi-cash me-2"></i>Expected Price:</span>
-                  <strong>₹${order.cropDetails.expectedPrice}/quintal</strong>
-                </div>
-                <div class="detail-row">
-                  <span><i class="bi bi-calendar-event me-2"></i>Listed:</span>
-                  <strong>${new Date(order.createdAt).toLocaleDateString('en-IN', { 
-                    day: 'numeric', 
-                    month: 'short', 
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}</strong>
-                </div>
-              </div>
-              
-              <div class="col-md-4 d-flex flex-column justify-content-between">
-                <div class="mb-3">
-                  <small class="text-muted d-block mb-2">Status Progress</small>
-                  <div class="progress" style="height: 8px;">
-                    <div class="progress-bar bg-warning" role="progressbar" 
-                         style="width: ${getCropProgressWidth(order.status)}%" 
-                         aria-valuenow="${getCropProgressWidth(order.status)}" 
-                         aria-valuemin="0" 
-                         aria-valuemax="100">
-                    </div>
-                  </div>
-                </div>
+  if (!token) {
+    alert('Please login to view your orders');
+    window.location.href = 'Login.html';
+    return;
+  }
   
-                <div class="d-grid gap-2">
-                  <button class="btn btn-outline-warning btn-sm" onclick="viewCropDetail('${order.id}')">
-                    <i class="bi bi-eye me-2"></i>View Details
-                  </button>
+  // Auto-load orders when page loads (no phone number needed)
+  loadAllOrders();
+  
+  // Hide phone number input section since we don't need it with authentication
+  const filterSection = document.querySelector('.filter-section');
+  if (filterSection) {
+    filterSection.style.display = 'none';
+  }
+});
+
+// Helper function to get auth headers
+function getAuthHeaders() {
+  const token = localStorage.getItem('token');
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  };
+}
+
+// Load all orders (equipment + crops) - USING AUTH TOKEN
+async function loadAllOrders() {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    alert('Please login to continue');
+    window.location.href = 'Login.html';
+    return;
+  }
+
+  // Show loading
+  document.getElementById('loadingState').style.display = 'flex';
+  document.getElementById('ordersContainer').style.display = 'none';
+
+  try {
+    // Fetch both equipment and crop data using authenticated endpoints
+    const [equipmentRes, cropRes] = await Promise.all([
+      fetch(`${EQUIPMENT_API}/my-quotations`, {
+        headers: getAuthHeaders()
+      }),
+      fetch(`${CROP_API}/my-listings`, {
+        headers: getAuthHeaders()
+      })
+    ]);
+
+    // Check for authentication errors
+    if (equipmentRes.status === 401 || cropRes.status === 401) {
+      alert('Session expired. Please login again');
+      localStorage.removeItem('token');
+      localStorage.removeItem('username');
+      localStorage.removeItem('fullname');
+      window.location.href = 'Login.html';
+      return;
+    }
+
+    const equipmentData = await equipmentRes.json();
+    const cropData = await cropRes.json();
+
+    // Normalize equipment data
+    const equipmentOrders = equipmentData.success ? equipmentData.data.map(item => ({
+      ...item,
+      listingType: 'equipment',
+      id: item._id
+    })) : [];
+
+    // Normalize crop data
+    const cropOrders = cropData.success ? cropData.data.map(item => ({
+      ...item,
+      listingType: 'crop',
+      id: item._id
+    })) : [];
+
+    allOrders = [...equipmentOrders, ...cropOrders];
     
-                  ${order.buyerContacts && order.buyerContacts.length > 0 ? `
-                  <span class="badge bg-success">
-                    <i class="bi bi-telephone me-1"></i>${order.buyerContacts.length} Buyer(s) Contacted
-                  </span>
-                  ` : ''}
-    
-                  ${order.status !== 'cancelled' && order.status !== 'sold' ? `
-                  <button class="btn btn-outline-danger btn-sm" onclick="cancelCropListing('${order.id}')">
-                    <i class="bi bi-x-circle me-2"></i>Cancel Listing
-                  </button>
-                  ` : ''}
-    
-                  ${order.status === 'contacted' || order.status === 'negotiating' ? `
-                  <button class="btn btn-success btn-sm" onclick="markAsSold('${order.id}')">
-                    <i class="bi bi-check-circle me-2"></i>Mark as Sold
-                  </button>
-                  ` : ''}
-                </div>
+    if (allOrders.length > 0) {
+      displayOrders(allOrders);
+      updateStats(allOrders);
+    } else {
+      showEmptyState();
+    }
+  } catch (error) {
+    console.error('Error loading orders:', error);
+    alert('Failed to load orders. Please try again.');
+    showEmptyState();
+  } finally {
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('ordersContainer').style.display = 'block';
+  }
+}
+
+// Display orders
+function displayOrders(orders) {
+  const container = document.getElementById('ordersContainer');
+  const typeFilterEl = document.getElementById('typeFilter');
+  const statusFilterEl = document.getElementById('statusFilter');
+  const typeFilter = typeFilterEl ? typeFilterEl.value : 'all';
+  const statusFilter = statusFilterEl ? statusFilterEl.value : '';
+
+  // Apply filters
+  let filteredOrders = orders;
+  
+  // Tab filter
+  if (currentTab !== 'all') {
+    filteredOrders = filteredOrders.filter(o => o.listingType === currentTab);
+  }
+  
+  // Type filter
+  if (typeFilter !== 'all') {
+    filteredOrders = filteredOrders.filter(o => o.listingType === typeFilter);
+  }
+  
+  // Status filter
+  if (statusFilter) {
+    filteredOrders = filteredOrders.filter(o => o.status === statusFilter);
+  }
+
+  if (filteredOrders.length === 0) {
+    showEmptyState();
+    return;
+  }
+
+  // Sort by created date (newest first)
+  filteredOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  container.innerHTML = filteredOrders.map(order => {
+    if (order.listingType === 'equipment') {
+      return renderEquipmentCard(order);
+    } else {
+      return renderCropCard(order);
+    }
+  }).join('');
+
+  updateTabCounts(filteredOrders);
+}
+
+// Render equipment card
+function renderEquipmentCard(order) {
+  return `
+    <div class="card order-card position-relative">
+      <span class="listing-type-badge equipment-badge">
+        <i class="bi bi-gear me-1"></i>Equipment Request
+      </span>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-8">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <h5 class="card-title mb-1">${order.equipment.name}</h5>
+                <p class="quotation-number mb-2">${order.quotationNumber}</p>
               </div>
+              <span class="status-badge status-${order.status}">${order.status}</span>
             </div>
-          </div>
-        </div>
-      `;
-    }
-
-    // Filter by tab
-    function filterTab(tab) {
-      currentTab = tab;
-      
-      // Update active button
-      document.querySelectorAll('.tab-pills .btn').forEach(btn => btn.classList.remove('active'));
-      document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.add('active');
-      
-      if (allOrders.length > 0) {
-        displayOrders(allOrders);
-      }
-    }
-
-    // Update tab counts
-    function updateTabCounts(filteredOrders) {
-      const equipmentCount = filteredOrders.filter(o => o.listingType === 'equipment').length;
-      const cropCount = filteredOrders.filter(o => o.listingType === 'crop').length;
-
-      document.getElementById('countAll').textContent = filteredOrders.length;
-      document.getElementById('countEquipment').textContent = equipmentCount;
-      document.getElementById('countCrop').textContent = cropCount;
-    }
-
-    // Show empty state
-    function showEmptyState() {
-      const container = document.getElementById('ordersContainer');
-      container.innerHTML = `
-        <div class="empty-state">
-          <i class="bi bi-inbox"></i>
-          <h4 class="text-muted">No Orders Found</h4>
-          <p class="text-muted">You haven't made any requests or listings yet</p>
-          <div class="mt-3">
-            <a href="Equipment.html" class="btn btn-success me-2">
-              <i class="bi bi-plus-circle me-2"></i>Request Equipment
-            </a>
-            <a href="market.html" class="btn btn-warning">
-              <i class="bi bi-flower2 me-2"></i>Sell Crops
-            </a>
-          </div>
-        </div>
-      `;
-    }
-
-    // Update statistics
-    function updateStats(orders) {
-      const equipmentOrders = orders.filter(o => o.listingType === 'equipment');
-      const cropOrders = orders.filter(o => o.listingType === 'crop');
-      
-      document.getElementById('totalItems').textContent = orders.length;
-      document.getElementById('equipmentCount').textContent = equipmentOrders.length;
-      document.getElementById('cropCount').textContent = cropOrders.length;
-      
-      const pendingCount = orders.filter(o => o.status === 'pending' || o.status === 'active').length;
-      const activeCount = orders.filter(o => o.status === 'approved' || o.status === 'active' || o.status === 'contacted').length;
-      const completedCount = orders.filter(o => o.status === 'completed' || o.status === 'sold').length;
-      
-      document.getElementById('pendingCount').textContent = pendingCount;
-      document.getElementById('activeCount').textContent = activeCount;
-      document.getElementById('completedCount').textContent = completedCount;
-
-      updateTabCounts(orders);
-    }
-
-    // Get progress width based on status (Equipment)
-    function getProgressWidth(status) {
-      const progress = {
-        'pending': 20,
-        'contacted': 40,
-        'quoted': 60,
-        'approved': 80,
-        'completed': 100,
-        'rejected': 0
-      };
-      return progress[status] || 0;
-    }
-
-    // Get progress width based on status (Crop)
-    function getCropProgressWidth(status) {
-      const progress = {
-        'active': 25,
-        'contacted': 50,
-        'negotiating': 75,
-        'sold': 100,
-        'cancelled': 0,
-        'expired': 0
-      };
-      return progress[status] || 25;
-    }
-
-    // View equipment detail
-    async function viewEquipmentDetail(orderId) {
-      try {
-        const response = await fetch(`${EQUIPMENT_API}/${orderId}`);
-        const result = await response.json();
-
-        if (result.success) {
-          const order = result.data;
-          document.getElementById('modalTitle').innerHTML = '<i class="bi bi-gear me-2"></i>Equipment Request Details';
-          document.getElementById('orderDetailBody').innerHTML = `
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <h6 class="text-success"><i class="bi bi-gear me-2"></i>Equipment Information</h6>
-                <div class="detail-row">
-                  <span>Name:</span>
-                  <strong>${order.equipment.name}</strong>
-                </div>
-                <div class="detail-row">
-                  <span>Category:</span>
-                  <strong>${order.equipment.category}</strong>
-                </div>
-                <div class="detail-row">
-                  <span>Type:</span>
-                  <strong class="text-capitalize">${order.quotationType}</strong>
-                </div>
-                <div class="detail-row">
-                  <span>Price:</span>
-                  <strong>${order.equipment.price}</strong>
-                </div>
-                ${order.equipment.rentalPrice ? `
-                <div class="detail-row">
-                  <span>Rental Price:</span>
-                  <strong>${order.equipment.rentalPrice}</strong>
-                </div>
-                ` : ''}
-                ${order.equipment.subsidy ? `
-                <div class="detail-row">
-                  <span>Subsidy Available:</span>
-                  <strong>${order.equipment.subsidy}</strong>
-                </div>
-                ` : ''}
-              </div>
-
-              <div class="col-md-6 mb-3">
-                <h6 class="text-success"><i class="bi bi-person me-2"></i>Your Information</h6>
-                <div class="detail-row">
-                  <span>Name:</span>
-                  <strong>${order.customerDetails.name}</strong>
-                </div>
-                <div class="detail-row">
-                  <span>Phone:</span>
-                  <strong>${order.customerDetails.phone}</strong>
-                </div>
-                ${order.customerDetails.email ? `
-                <div class="detail-row">
-                  <span>Email:</span>
-                  <strong>${order.customerDetails.email}</strong>
-                </div>
-                ` : ''}
-                <div class="detail-row">
-                  <span>Location:</span>
-                  <strong>${order.customerDetails.location}</strong>
-                </div>
-                ${order.customerDetails.landSize ? `
-                <div class="detail-row">
-                  <span>Land Size:</span>
-                  <strong>${order.customerDetails.landSize} acres</strong>
-                </div>
-                ` : ''}
-              </div>
+            
+            <div class="detail-row">
+              <span><i class="bi bi-tag me-2"></i>Type:</span>
+              <strong class="text-capitalize">${order.quotationType}</strong>
             </div>
-
-            <hr>
-
-            <div class="row">
-              <div class="col-12 mb-3">
-                <h6 class="text-success"><i class="bi bi-clock-history me-2"></i>Status Timeline</h6>
-                <div class="timeline">
-                  <div class="timeline-item">
-                    <strong>Quotation Submitted</strong>
-                    <div class="text-muted small">${new Date(order.createdAt).toLocaleString('en-IN')}</div>
-                  </div>
-                  ${order.status !== 'pending' ? `
-                  <div class="timeline-item">
-                    <strong>Status: ${order.status}</strong>
-                    <div class="text-muted small">${new Date(order.updatedAt).toLocaleString('en-IN')}</div>
-                  </div>
-                  ` : ''}
-                </div>
-              </div>
+            <div class="detail-row">
+              <span><i class="bi bi-cash me-2"></i>Price:</span>
+              <strong>${order.quotationType === 'rental' ? order.equipment.rentalPrice : order.equipment.price}</strong>
             </div>
-
-            ${order.additionalNotes ? `
-            <div class="alert alert-info">
-              <strong><i class="bi bi-info-circle me-2"></i>Your Notes:</strong>
-              <p class="mb-0 mt-2">${order.additionalNotes}</p>
+            ${order.rentalDuration ? `
+            <div class="detail-row">
+              <span><i class="bi bi-calendar-range me-2"></i>Duration:</span>
+              <strong>${order.rentalDuration}</strong>
             </div>
             ` : ''}
-
-            <div class="alert alert-success">
-              <strong><i class="bi bi-check-circle me-2"></i>Quotation Number:</strong>
-              <p class="mb-0 mt-2 quotation-number">${order.quotationNumber}</p>
+            <div class="detail-row">
+              <span><i class="bi bi-calendar-event me-2"></i>Requested:</span>
+              <strong>${new Date(order.createdAt).toLocaleDateString('en-IN', { 
+                day: 'numeric', 
+                month: 'short', 
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}</strong>
             </div>
-          `;
-
-          new bootstrap.Modal(document.getElementById('orderDetailModal')).show();
-        }
-      } catch (error) {
-        console.error('Error loading equipment details:', error);
-        alert('Failed to load details');
-      }
-    }
-
-    // View crop detail
-    async function viewCropDetail(listingId) {
-      try {
-        const response = await fetch(`${CROP_API}/${listingId}`);
-        const result = await response.json();
-
-        if (result.success) {
-          const listing = result.data;
-          document.getElementById('modalTitle').innerHTML = '<i class="bi bi-flower2 me-2"></i>Crop Listing Details';
-          document.getElementById('orderDetailBody').innerHTML = `
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <h6 class="text-success"><i class="bi bi-flower2 me-2"></i>Crop Information</h6>
-                <div class="detail-row">
-                  <span>Crop Name:</span>
-                  <strong>${listing.crop.name}</strong>
-                </div>
-                <div class="detail-row">
-                  <span>Category:</span>
-                  <strong>${listing.crop.category}</strong>
-                </div>
-                <div class="detail-row">
-                  <span>MSP:</span>
-                  <strong>${listing.crop.msp}/quintal</strong>
-                </div>
-                <div class="detail-row">
-                  <span>Quantity:</span>
-                  <strong>${listing.cropDetails.quantity} Quintals</strong>
-                </div>
-                <div class="detail-row">
-                  <span>Quality:</span>
-                  <strong class="text-capitalize">${listing.cropDetails.quality}</strong>
-                </div>
-                <div class="detail-row">
-                  <span>Expected Price:</span>
-                  <strong>₹${listing.cropDetails.expectedPrice}/quintal</strong>
-                </div>
-                ${listing.cropDetails.harvestDate ? `
-                <div class="detail-row">
-                  <span>Harvest Date:</span>
-                  <strong>${new Date(listing.cropDetails.harvestDate).toLocaleDateString('en-IN')}</strong>
-                </div>
-                ` : ''}
-              </div>
-
-              <div class="col-md-6 mb-3">
-                <h6 class="text-success"><i class="bi bi-person me-2"></i>Your Information</h6>
-                <div class="detail-row">
-                  <span>Name:</span>
-                  <strong>${listing.seller.name}</strong>
-                </div>
-                <div class="detail-row">
-                  <span>Phone:</span>
-                  <strong>${listing.seller.phone}</strong>
-                </div>
-                ${listing.seller.email ? `
-                <div class="detail-row">
-                  <span>Email:</span>
-                  <strong>${listing.seller.email}</strong>
-                </div>
-                ` : ''}
-                <div class="detail-row">
-                  <span>Location:</span>
-                  <strong>${listing.seller.location}</strong>
-                </div>
-
-                <hr>
-
-                <h6 class="text-success"><i class="bi bi-tools me-2"></i>Services Requested</h6>
-                <div class="mb-2">
-                  ${listing.services.transport ? '<span class="badge bg-success me-1"><i class="bi bi-truck me-1"></i>Transport</span>' : ''}
-                  ${listing.services.storage ? '<span class="badge bg-info me-1"><i class="bi bi-box me-1"></i>Storage</span>' : ''}
-                  ${listing.services.qualityTest ? '<span class="badge bg-warning me-1"><i class="bi bi-shield-check me-1"></i>Quality Test</span>' : ''}
-                  ${!listing.services.transport && !listing.services.storage && !listing.services.qualityTest ? '<span class="text-muted">No additional services</span>' : ''}
-                </div>
-              </div>
-            </div>
-
-            ${listing.buyerContacts && listing.buyerContacts.length > 0 ? `
-            <hr>
+          </div>
+          
+          <div class="col-md-4 d-flex flex-column justify-content-between">
             <div class="mb-3">
-              <h6 class="text-success"><i class="bi bi-telephone me-2"></i>Buyer Contacts (${listing.buyerContacts.length})</h6>
-              ${listing.buyerContacts.map(buyer => `
-                <div class="card mb-2">
-                  <div class="card-body py-2">
-                    <div class="row align-items-center">
-                      <div class="col-md-4">
-                        <strong>${buyer.buyerName || 'Anonymous Buyer'}</strong>
-                      </div>
-                      <div class="col-md-4">
-                        <a href="tel:${buyer.buyerPhone}" class="text-success">
-                          <i class="bi bi-telephone me-1"></i>${buyer.buyerPhone}
-                        </a>
-                      </div>
-                      <div class="col-md-4 text-end">
-                        ${buyer.offeredPrice ? `<span class="badge bg-warning">Offered: ₹${buyer.offeredPrice}/qt</span>` : ''}
-                        <small class="text-muted d-block">${new Date(buyer.contactedAt).toLocaleDateString('en-IN')}</small>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              `).join('')}
-            </div>
-            ` : ''}
-
-            <hr>
-
-            <div class="row">
-              <div class="col-12 mb-3">
-                <h6 class="text-success"><i class="bi bi-clock-history me-2"></i>Status Timeline</h6>
-                <div class="timeline">
-                  <div class="timeline-item">
-                    <strong>Listing Created</strong>
-                    <div class="text-muted small">${new Date(listing.createdAt).toLocaleString('en-IN')}</div>
-                  </div>
-                  ${listing.status !== 'active' ? `
-                  <div class="timeline-item">
-                    <strong>Status: ${listing.status}</strong>
-                    <div class="text-muted small">${new Date(listing.updatedAt).toLocaleString('en-IN')}</div>
-                  </div>
-                  ` : ''}
-                  ${listing.soldDate ? `
-                  <div class="timeline-item">
-                    <strong>Sold</strong>
-                    <div class="text-muted small">${new Date(listing.soldDate).toLocaleString('en-IN')}</div>
-                    ${listing.finalPrice ? `<div class="text-success">Final Price: ₹${listing.finalPrice}/quintal</div>` : ''}
-                  </div>
-                  ` : ''}
+              <small class="text-muted d-block mb-2">Status Progress</small>
+              <div class="progress" style="height: 8px;">
+                <div class="progress-bar bg-success" role="progressbar" 
+                     style="width: ${getProgressWidth(order.status)}%" 
+                     aria-valuenow="${getProgressWidth(order.status)}" 
+                     aria-valuemin="0" 
+                     aria-valuemax="100">
                 </div>
               </div>
             </div>
 
-            ${listing.additionalInfo ? `
-            <div class="alert alert-info">
-              <strong><i class="bi bi-info-circle me-2"></i>Your Notes:</strong>
-              <p class="mb-0 mt-2">${listing.additionalInfo}</p>
+            <div class="d-grid gap-2">
+              <button class="btn btn-outline-success btn-sm" onclick="viewEquipmentDetail('${order.id}')">
+                <i class="bi bi-eye me-2"></i>View Details
+              </button>
+
+              ${order.status !== 'cancelled' && order.status !== 'completed' ? `
+              <button class="btn btn-outline-danger btn-sm" onclick="cancelEquipment('${order.id}')">
+                <i class="bi bi-x-circle me-2"></i>Cancel Request
+              </button>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;              
+}
+
+// Render crop card
+function renderCropCard(order) {
+  return `
+    <div class="card order-card crop-card position-relative">
+      <span class="listing-type-badge crop-badge">
+        <i class="bi bi-flower2 me-1"></i>Crop Selling
+      </span>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-8">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <h5 class="card-title mb-1">${order.crop.name}</h5>
+                <p class="quotation-number mb-2">${order.listingNumber}</p>
+              </div>
+              <span class="status-badge status-${order.status}">${order.status}</span>
+            </div>
+            
+            <div class="detail-row">
+              <span><i class="bi bi-box-seam me-2"></i>Quantity:</span>
+              <strong>${order.cropDetails.quantity} Quintals</strong>
+            </div>
+            <div class="detail-row">
+              <span><i class="bi bi-star me-2"></i>Quality:</span>
+              <strong class="text-capitalize">${order.cropDetails.quality}</strong>
+            </div>
+            <div class="detail-row">
+              <span><i class="bi bi-cash me-2"></i>Expected Price:</span>
+              <strong>₹${order.cropDetails.expectedPrice}/quintal</strong>
+            </div>
+            <div class="detail-row">
+              <span><i class="bi bi-calendar-event me-2"></i>Listed:</span>
+              <strong>${new Date(order.createdAt).toLocaleDateString('en-IN', { 
+                day: 'numeric', 
+                month: 'short', 
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}</strong>
+            </div>
+          </div>
+          
+          <div class="col-md-4 d-flex flex-column justify-content-between">
+            <div class="mb-3">
+              <small class="text-muted d-block mb-2">Status Progress</small>
+              <div class="progress" style="height: 8px;">
+                <div class="progress-bar bg-warning" role="progressbar" 
+                     style="width: ${getCropProgressWidth(order.status)}%" 
+                     aria-valuenow="${getCropProgressWidth(order.status)}" 
+                     aria-valuemin="0" 
+                     aria-valuemax="100">
+                </div>
+              </div>
+            </div>
+
+            <div class="d-grid gap-2">
+              <button class="btn btn-outline-warning btn-sm" onclick="viewCropDetail('${order.id}')">
+                <i class="bi bi-eye me-2"></i>View Details
+              </button>
+
+              ${order.buyerContacts && order.buyerContacts.length > 0 ? `
+              <span class="badge bg-success">
+                <i class="bi bi-telephone me-1"></i>${order.buyerContacts.length} Buyer(s) Contacted
+              </span>
+              ` : ''}
+
+              ${order.status !== 'cancelled' && order.status !== 'sold' ? `
+              <button class="btn btn-outline-danger btn-sm" onclick="cancelCropListing('${order.id}')">
+                <i class="bi bi-x-circle me-2"></i>Cancel Listing
+              </button>
+              ` : ''}
+
+              ${order.status === 'contacted' || order.status === 'negotiating' ? `
+              <button class="btn btn-success btn-sm" onclick="markAsSold('${order.id}')">
+                <i class="bi bi-check-circle me-2"></i>Mark as Sold
+              </button>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// Filter by tab
+function filterTab(tab) {
+  currentTab = tab;
+  
+  // Update active button
+  document.querySelectorAll('.tab-pills .btn').forEach(btn => btn.classList.remove('active'));
+  const tabBtn = document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
+  if (tabBtn) {
+    tabBtn.classList.add('active');
+  }
+  
+  if (allOrders.length > 0) {
+    displayOrders(allOrders);
+  }
+}
+
+// Update tab counts
+function updateTabCounts(filteredOrders) {
+  const equipmentCount = filteredOrders.filter(o => o.listingType === 'equipment').length;
+  const cropCount = filteredOrders.filter(o => o.listingType === 'crop').length;
+
+  const countAll = document.getElementById('countAll');
+  const countEquipment = document.getElementById('countEquipment');
+  const countCrop = document.getElementById('countCrop');
+
+  if (countAll) countAll.textContent = filteredOrders.length;
+  if (countEquipment) countEquipment.textContent = equipmentCount;
+  if (countCrop) countCrop.textContent = cropCount;
+}
+
+// Show empty state
+function showEmptyState() {
+  const container = document.getElementById('ordersContainer');
+  container.innerHTML = `
+    <div class="empty-state">
+      <i class="bi bi-inbox"></i>
+      <h4 class="text-muted">No Orders Found</h4>
+      <p class="text-muted">You haven't made any requests or listings yet</p>
+      <div class="mt-3">
+        <a href="Equipment.html" class="btn btn-success me-2">
+          <i class="bi bi-plus-circle me-2"></i>Request Equipment
+        </a>
+        <a href="market.html" class="btn btn-warning">
+          <i class="bi bi-flower2 me-2"></i>Sell Crops
+        </a>
+      </div>
+    </div>
+  `;
+}
+
+// Update statistics
+function updateStats(orders) {
+  const equipmentOrders = orders.filter(o => o.listingType === 'equipment');
+  const cropOrders = orders.filter(o => o.listingType === 'crop');
+  
+  document.getElementById('totalItems').textContent = orders.length;
+  document.getElementById('equipmentCount').textContent = equipmentOrders.length;
+  document.getElementById('cropCount').textContent = cropOrders.length;
+  
+  const pendingCount = orders.filter(o => o.status === 'pending' || o.status === 'active').length;
+  const activeCount = orders.filter(o => o.status === 'approved' || o.status === 'active' || o.status === 'contacted').length;
+  const completedCount = orders.filter(o => o.status === 'completed' || o.status === 'sold').length;
+  
+  document.getElementById('pendingCount').textContent = pendingCount;
+  document.getElementById('activeCount').textContent = activeCount;
+  document.getElementById('completedCount').textContent = completedCount;
+
+  updateTabCounts(orders);
+}
+
+// Get progress width based on status (Equipment)
+function getProgressWidth(status) {
+  const progress = {
+    'pending': 20,
+    'contacted': 40,
+    'quoted': 60,
+    'approved': 80,
+    'completed': 100,
+    'rejected': 0,
+    'cancelled': 0
+  };
+  return progress[status] || 0;
+}
+
+// Get progress width based on status (Crop)
+function getCropProgressWidth(status) {
+  const progress = {
+    'active': 25,
+    'contacted': 50,
+    'negotiating': 75,
+    'sold': 100,
+    'cancelled': 0,
+    'expired': 0
+  };
+  return progress[status] || 25;
+}
+
+// View equipment detail - USING AUTH
+async function viewEquipmentDetail(orderId) {
+  try {
+    const response = await fetch(`${EQUIPMENT_API}/${orderId}`, {
+      headers: getAuthHeaders()
+    });
+    
+    if (response.status === 401) {
+      alert('Session expired. Please login again');
+      localStorage.removeItem('token');
+      window.location.href = 'Login.html';
+      return;
+    }
+    
+    const result = await response.json();
+
+    if (result.success) {
+      const order = result.data;
+      document.getElementById('modalTitle').innerHTML = '<i class="bi bi-gear me-2"></i>Equipment Request Details';
+      document.getElementById('orderDetailBody').innerHTML = `
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <h6 class="text-success"><i class="bi bi-gear me-2"></i>Equipment Information</h6>
+            <div class="detail-row">
+              <span>Name:</span>
+              <strong>${order.equipment.name}</strong>
+            </div>
+            <div class="detail-row">
+              <span>Category:</span>
+              <strong>${order.equipment.category}</strong>
+            </div>
+            <div class="detail-row">
+              <span>Type:</span>
+              <strong class="text-capitalize">${order.quotationType}</strong>
+            </div>
+            <div class="detail-row">
+              <span>Price:</span>
+              <strong>${order.equipment.price}</strong>
+            </div>
+            ${order.equipment.rentalPrice ? `
+            <div class="detail-row">
+              <span>Rental Price:</span>
+              <strong>${order.equipment.rentalPrice}</strong>
             </div>
             ` : ''}
-
-            <div class="alert alert-success">
-              <strong><i class="bi bi-check-circle me-2"></i>Listing Number:</strong>
-              <p class="mb-0 mt-2 quotation-number">${listing.listingNumber}</p>
+            ${order.equipment.subsidy ? `
+            <div class="detail-row">
+              <span>Subsidy Available:</span>
+              <strong>${order.equipment.subsidy}</strong>
             </div>
-          `;
+            ` : ''}
+          </div>
 
-          new bootstrap.Modal(document.getElementById('orderDetailModal')).show();
-        }
-      } catch (error) {
-        console.error('Error loading crop details:', error);
-        alert('Failed to load details');
-      }
+          <div class="col-md-6 mb-3">
+            <h6 class="text-success"><i class="bi bi-person me-2"></i>Your Information</h6>
+            <div class="detail-row">
+              <span>Name:</span>
+              <strong>${order.customerDetails.name}</strong>
+            </div>
+            <div class="detail-row">
+              <span>Phone:</span>
+              <strong>${order.customerDetails.phone}</strong>
+            </div>
+            ${order.customerDetails.email ? `
+            <div class="detail-row">
+              <span>Email:</span>
+              <strong>${order.customerDetails.email}</strong>
+            </div>
+            ` : ''}
+            <div class="detail-row">
+              <span>Location:</span>
+              <strong>${order.customerDetails.location}</strong>
+            </div>
+            ${order.customerDetails.landSize ? `
+            <div class="detail-row">
+              <span>Land Size:</span>
+              <strong>${order.customerDetails.landSize} acres</strong>
+            </div>
+            ` : ''}
+          </div>
+        </div>
+
+        <hr>
+
+        <div class="row">
+          <div class="col-12 mb-3">
+            <h6 class="text-success"><i class="bi bi-clock-history me-2"></i>Status Timeline</h6>
+            <div class="timeline">
+              <div class="timeline-item">
+                <strong>Quotation Submitted</strong>
+                <div class="text-muted small">${new Date(order.createdAt).toLocaleString('en-IN')}</div>
+              </div>
+              ${order.status !== 'pending' ? `
+              <div class="timeline-item">
+                <strong>Status: ${order.status}</strong>
+                <div class="text-muted small">${new Date(order.updatedAt).toLocaleString('en-IN')}</div>
+              </div>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+
+        ${order.additionalNotes ? `
+        <div class="alert alert-info">
+          <strong><i class="bi bi-info-circle me-2"></i>Your Notes:</strong>
+          <p class="mb-0 mt-2">${order.additionalNotes}</p>
+        </div>
+        ` : ''}
+
+        <div class="alert alert-success">
+          <strong><i class="bi bi-check-circle me-2"></i>Quotation Number:</strong>
+          <p class="mb-0 mt-2 quotation-number">${order.quotationNumber}</p>
+        </div>
+      `;
+
+      new bootstrap.Modal(document.getElementById('orderDetailModal')).show();
     }
+  } catch (error) {
+    console.error('Error loading equipment details:', error);
+    alert('Failed to load details');
+  }
+}
 
-    // Contact support
-    function contactSupport() {
-      alert('Support Contact:\n\nPhone: +91 9876543210\nEmail: support@krishisarthi.com\nTimings: 9 AM - 6 PM (Mon-Sat)\n\nWe are here to help you!');
+// View crop detail - USING AUTH
+async function viewCropDetail(listingId) {
+  try {
+    const response = await fetch(`${CROP_API}/${listingId}`, {
+      headers: getAuthHeaders()
+    });
+    
+    if (response.status === 401) {
+      alert('Session expired. Please login again');
+      localStorage.removeItem('token');
+      window.location.href = 'Login.html';
+      return;
     }
+    
+    const result = await response.json();
 
-    // Filter change listeners
-    document.getElementById('typeFilter').addEventListener('change', () => {
-      if (allOrders.length > 0) {
-        displayOrders(allOrders);
-      }
-    });
+    if (result.success) {
+      const listing = result.data;
+      document.getElementById('modalTitle').innerHTML = '<i class="bi bi-flower2 me-2"></i>Crop Listing Details';
+      document.getElementById('orderDetailBody').innerHTML = `
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <h6 class="text-success"><i class="bi bi-flower2 me-2"></i>Crop Information</h6>
+            <div class="detail-row">
+              <span>Crop Name:</span>
+              <strong>${listing.crop.name}</strong>
+            </div>
+            <div class="detail-row">
+              <span>Category:</span>
+              <strong>${listing.crop.category}</strong>
+            </div>
+            <div class="detail-row">
+              <span>MSP:</span>
+              <strong>${listing.crop.msp}/quintal</strong>
+            </div>
+            <div class="detail-row">
+              <span>Quantity:</span>
+              <strong>${listing.cropDetails.quantity} Quintals</strong>
+            </div>
+            <div class="detail-row">
+              <span>Quality:</span>
+              <strong class="text-capitalize">${listing.cropDetails.quality}</strong>
+            </div>
+            <div class="detail-row">
+              <span>Expected Price:</span>
+              <strong>₹${listing.cropDetails.expectedPrice}/quintal</strong>
+            </div>
+            ${listing.cropDetails.harvestDate ? `
+            <div class="detail-row">
+              <span>Harvest Date:</span>
+              <strong>${new Date(listing.cropDetails.harvestDate).toLocaleDateString('en-IN')}</strong>
+            </div>
+            ` : ''}
+          </div>
 
-    document.getElementById('statusFilter').addEventListener('change', () => {
-      if (allOrders.length > 0) {
-        displayOrders(allOrders);
-      }
-    });
+          <div class="col-md-6 mb-3">
+            <h6 class="text-success"><i class="bi bi-person me-2"></i>Your Information</h6>
+            <div class="detail-row">
+              <span>Name:</span>
+              <strong>${listing.seller.name}</strong>
+            </div>
+            <div class="detail-row">
+              <span>Phone:</span>
+              <strong>${listing.seller.phone}</strong>
+            </div>
+            ${listing.seller.email ? `
+            <div class="detail-row">
+              <span>Email:</span>
+              <strong>${listing.seller.email}</strong>
+            </div>
+            ` : ''}
+            <div class="detail-row">
+              <span>Location:</span>
+              <strong>${listing.seller.location}</strong>
+            </div>
 
-    // Logout
-    document.getElementById('logoutBtn').addEventListener('click', (e) => {
-      e.preventDefault();
-      if (confirm('Are you sure you want to logout?')) {
-        localStorage.removeItem('userPhone');
-        window.location.href = 'index.html';
-      }
-    });
+            <hr>
 
-    // Cancel Equipment Request
+            <h6 class="text-success"><i class="bi bi-tools me-2"></i>Services Requested</h6>
+            <div class="mb-2">
+              ${listing.services.transport ? '<span class="badge bg-success me-1"><i class="bi bi-truck me-1"></i>Transport</span>' : ''}
+              ${listing.services.storage ? '<span class="badge bg-info me-1"><i class="bi bi-box me-1"></i>Storage</span>' : ''}
+              ${listing.services.qualityTest ? '<span class="badge bg-warning me-1"><i class="bi bi-shield-check me-1"></i>Quality Test</span>' : ''}
+              ${!listing.services.transport && !listing.services.storage && !listing.services.qualityTest ? '<span class="text-muted">No additional services</span>' : ''}
+            </div>
+          </div>
+        </div>
+
+        ${listing.buyerContacts && listing.buyerContacts.length > 0 ? `
+        <hr>
+        <div class="mb-3">
+          <h6 class="text-success"><i class="bi bi-telephone me-2"></i>Buyer Contacts (${listing.buyerContacts.length})</h6>
+          ${listing.buyerContacts.map(buyer => `
+            <div class="card mb-2">
+              <div class="card-body py-2">
+                <div class="row align-items-center">
+                  <div class="col-md-4">
+                    <strong>${buyer.buyerName || 'Anonymous Buyer'}</strong>
+                  </div>
+                  <div class="col-md-4">
+                    <a href="tel:${buyer.buyerPhone}" class="text-success">
+                      <i class="bi bi-telephone me-1"></i>${buyer.buyerPhone}
+                    </a>
+                  </div>
+                  <div class="col-md-4 text-end">
+                    ${buyer.offeredPrice ? `<span class="badge bg-warning">Offered: ₹${buyer.offeredPrice}/qt</span>` : ''}
+                    <small class="text-muted d-block">${new Date(buyer.contactedAt).toLocaleDateString('en-IN')}</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+        ` : ''}
+
+        <hr>
+
+        <div class="row">
+          <div class="col-12 mb-3">
+            <h6 class="text-success"><i class="bi bi-clock-history me-2"></i>Status Timeline</h6>
+            <div class="timeline">
+              <div class="timeline-item">
+                <strong>Listing Created</strong>
+                <div class="text-muted small">${new Date(listing.createdAt).toLocaleString('en-IN')}</div>
+              </div>
+              ${listing.status !== 'active' ? `
+              <div class="timeline-item">
+                <strong>Status: ${listing.status}</strong>
+                <div class="text-muted small">${new Date(listing.updatedAt).toLocaleString('en-IN')}</div>
+              </div>
+              ` : ''}
+              ${listing.soldDate ? `
+              <div class="timeline-item">
+                <strong>Sold</strong>
+                <div class="text-muted small">${new Date(listing.soldDate).toLocaleString('en-IN')}</div>
+                ${listing.finalPrice ? `<div class="text-success">Final Price: ₹${listing.finalPrice}/quintal</div>` : ''}
+              </div>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+
+        ${listing.additionalInfo ? `
+        <div class="alert alert-info">
+          <strong><i class="bi bi-info-circle me-2"></i>Your Notes:</strong>
+          <p class="mb-0 mt-2">${listing.additionalInfo}</p>
+        </div>
+        ` : ''}
+
+        <div class="alert alert-success">
+          <strong><i class="bi bi-check-circle me-2"></i>Listing Number:</strong>
+          <p class="mb-0 mt-2 quotation-number">${listing.listingNumber}</p>
+        </div>
+      `;
+
+      new bootstrap.Modal(document.getElementById('orderDetailModal')).show();
+    }
+  } catch (error) {
+    console.error('Error loading crop details:', error);
+    alert('Failed to load details');
+  }
+}
+
+// Contact support
+function contactSupport() {
+  alert('Support Contact:\n\nPhone: +91 9876543210\nEmail: support@krishisarthi.com\nTimings: 9 AM - 6 PM (Mon-Sat)\n\nWe are here to help you!');
+}
+
+// Filter change listeners
+const typeFilterEl = document.getElementById('typeFilter');
+const statusFilterEl = document.getElementById('statusFilter');
+
+if (typeFilterEl) {
+  typeFilterEl.addEventListener('change', () => {
+    if (allOrders.length > 0) {
+      displayOrders(allOrders);
+    }
+  });
+}
+
+if (statusFilterEl) {
+  statusFilterEl.addEventListener('change', () => {
+    if (allOrders.length > 0) {
+      displayOrders(allOrders);
+    }
+  });
+}
+
+// Cancel Equipment Request - USING AUTH
 function cancelEquipment(id) {
   document.getElementById('cancelEquipmentId').value = id;
   document.getElementById('equipmentCancelReason').value = '';
@@ -1188,18 +1248,23 @@ function cancelEquipment(id) {
 async function confirmCancelEquipment() {
   const id = document.getElementById('cancelEquipmentId').value;
   const cancelReason = document.getElementById('equipmentCancelReason').value.trim();
-  const userPhone = document.getElementById('phoneInput').value;
 
   try {
     const response = await fetch(`${EQUIPMENT_API}/${id}/cancel`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userPhone,
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ 
         cancelReason,
         cancelledBy: 'Customer'
       })
     });
+
+    if (response.status === 401) {
+      alert('Session expired. Please login again');
+      localStorage.removeItem('token');
+      window.location.href = 'Login.html';
+      return;
+    }
 
     const result = await response.json();
 
@@ -1216,7 +1281,7 @@ async function confirmCancelEquipment() {
   }
 }
 
-// Cancel Crop Listing
+// Cancel Crop Listing - USING AUTH
 function cancelCropListing(id) {
   document.getElementById('cancelCropId').value = id;
   document.getElementById('cropCancelReason').value = '';
@@ -1226,17 +1291,20 @@ function cancelCropListing(id) {
 async function confirmCancelCrop() {
   const id = document.getElementById('cancelCropId').value;
   const cancelReason = document.getElementById('cropCancelReason').value.trim();
-  const userPhone = document.getElementById('phoneInput').value;
 
   try {
     const response = await fetch(`${CROP_API}/${id}/cancel`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userPhone,
-        cancelReason
-      })
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ cancelReason })
     });
+
+    if (response.status === 401) {
+      alert('Session expired. Please login again');
+      localStorage.removeItem('token');
+      window.location.href = 'Login.html';
+      return;
+    }
 
     const result = await response.json();
 
@@ -1253,7 +1321,7 @@ async function confirmCancelCrop() {
   }
 }
 
-// Mark Crop as Sold
+// Mark Crop as Sold - USING AUTH
 function markAsSold(id) {
   document.getElementById('soldCropId').value = id;
   document.getElementById('soldTo').value = '';
@@ -1267,7 +1335,6 @@ async function confirmMarkAsSold() {
   const soldTo = document.getElementById('soldTo').value.trim();
   const finalPrice = document.getElementById('finalPrice').value;
   const soldQuantity = document.getElementById('soldQuantity').value;
-  const userPhone = document.getElementById('phoneInput').value;
 
   if (!soldTo || !finalPrice) {
     alert('Please fill all required fields');
@@ -1277,14 +1344,20 @@ async function confirmMarkAsSold() {
   try {
     const response = await fetch(`${CROP_API}/${id}/sold`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify({
-        userPhone,
         soldTo,
         finalPrice: parseFloat(finalPrice),
         soldQuantity: soldQuantity ? parseFloat(soldQuantity) : null
       })
     });
+
+    if (response.status === 401) {
+      alert('Session expired. Please login again');
+      localStorage.removeItem('token');
+      window.location.href = 'Login.html';
+      return;
+    }
 
     const result = await response.json();
 
@@ -1300,6 +1373,480 @@ async function confirmMarkAsSold() {
     alert('Failed to mark as sold. Please try again.');
   }
 }
+
+// Logout - USING AUTH
+const logoutBtn = document.getElementById('logoutBtn');
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (confirm('Are you sure you want to logout?')) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('username');
+      localStorage.removeItem('fullname');
+      window.location.href = 'Login.html';
+    }
+  });
+}
+// Add these functions to your orders.html script section
+
+// ============= EQUIPMENT COMPLETION FUNCTIONS =============
+
+// Mark Equipment Request as Fulfilled/Completed
+function markEquipmentFulfilled(id) {
+  document.getElementById('fulfillEquipmentId').value = id;
+  document.getElementById('equipmentRating').value = '5';
+  document.getElementById('equipmentFeedback').value = '';
+  new bootstrap.Modal(document.getElementById('fulfillEquipmentModal')).show();
+}
+
+async function confirmEquipmentFulfilled() {
+  const id = document.getElementById('fulfillEquipmentId').value;
+  const rating = document.getElementById('equipmentRating').value;
+  const feedback = document.getElementById('equipmentFeedback').value.trim();
+
+  if (!rating) {
+    alert('Please provide a rating');
+    return;
+  }
+
+  try {
+    const response = await fetch(`${EQUIPMENT_API}/${id}/complete`, {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        rating: parseInt(rating),
+        feedback: feedback,
+        completedBy: 'Customer'
+      })
+    });
+
+    if (response.status === 401) {
+      alert('Session expired. Please login again');
+      localStorage.removeItem('token');
+      window.location.href = 'Login.html';
+      return;
+    }
+
+    const result = await response.json();
+
+    if (result.success) {
+      alert('Request marked as fulfilled! Thank you for your feedback.');
+      bootstrap.Modal.getInstance(document.getElementById('fulfillEquipmentModal')).hide();
+      loadAllOrders();
+    } else {
+      alert(result.message || 'Failed to mark as fulfilled');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Failed to complete request. Please try again.');
+  }
+}
+
+// ============= CROP SOLD FUNCTIONS (Already exists but improved) =============
+
+// Mark Crop as Sold (Already in your code, but here's the improved version)
+function markAsSold(id) {
+  // Find the crop listing to pre-fill some data
+  const cropListing = allOrders.find(o => o.id === id && o.listingType === 'crop');
+  
+  document.getElementById('soldCropId').value = id;
+  document.getElementById('soldTo').value = '';
+  document.getElementById('finalPrice').value = cropListing ? cropListing.cropDetails.expectedPrice : '';
+  document.getElementById('soldQuantity').value = cropListing ? cropListing.cropDetails.quantity : '';
+  document.getElementById('soldDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('paymentReceived').checked = false;
+  
+  new bootstrap.Modal(document.getElementById('markSoldModal')).show();
+}
+
+async function confirmMarkAsSold() {
+  const id = document.getElementById('soldCropId').value;
+  const soldTo = document.getElementById('soldTo').value.trim();
+  const finalPrice = document.getElementById('finalPrice').value;
+  const soldQuantity = document.getElementById('soldQuantity').value;
+  const soldDate = document.getElementById('soldDate').value;
+  const paymentReceived = document.getElementById('paymentReceived').checked;
+
+  if (!soldTo || !finalPrice || !soldQuantity) {
+    alert('Please fill all required fields');
+    return;
+  }
+
+  try {
+    const response = await fetch(`${CROP_API}/${id}/sold`, {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        soldTo,
+        finalPrice: parseFloat(finalPrice),
+        soldQuantity: parseFloat(soldQuantity),
+        soldDate: soldDate,
+        paymentReceived: paymentReceived
+      })
+    });
+
+    if (response.status === 401) {
+      alert('Session expired. Please login again');
+      localStorage.removeItem('token');
+      window.location.href = 'Login.html';
+      return;
+    }
+
+    const result = await response.json();
+
+    if (result.success) {
+      alert('Crop marked as sold successfully! Congratulations on your sale! 🎉');
+      bootstrap.Modal.getInstance(document.getElementById('markSoldModal')).hide();
+      loadAllOrders();
+    } else {
+      alert(result.message || 'Failed to mark as sold');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Failed to mark as sold. Please try again.');
+  }
+}
+
+// ============= UPDATED RENDER FUNCTIONS WITH NEW BUTTONS =============
+
+// Updated Equipment Card Render (Replace your existing renderEquipmentCard function)
+function renderEquipmentCard(order) {
+  const canComplete = order.status === 'approved' || order.status === 'quoted';
+  const canCancel = order.status !== 'cancelled' && order.status !== 'completed';
+  
+  return `
+    <div class="card order-card position-relative">
+      <span class="listing-type-badge equipment-badge">
+        <i class="bi bi-gear me-1"></i>Equipment Request
+      </span>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-8">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <h5 class="card-title mb-1">${order.equipment.name}</h5>
+                <p class="quotation-number mb-2">${order.quotationNumber}</p>
+              </div>
+              <span class="status-badge status-${order.status}">${order.status}</span>
+            </div>
+            
+            <div class="detail-row">
+              <span><i class="bi bi-tag me-2"></i>Type:</span>
+              <strong class="text-capitalize">${order.quotationType}</strong>
+            </div>
+            <div class="detail-row">
+              <span><i class="bi bi-cash me-2"></i>Price:</span>
+              <strong>${order.quotationType === 'rental' ? order.equipment.rentalPrice : order.equipment.price}</strong>
+            </div>
+            ${order.rentalDuration ? `
+            <div class="detail-row">
+              <span><i class="bi bi-calendar-range me-2"></i>Duration:</span>
+              <strong>${order.rentalDuration}</strong>
+            </div>
+            ` : ''}
+            <div class="detail-row">
+              <span><i class="bi bi-calendar-event me-2"></i>Requested:</span>
+              <strong>${new Date(order.createdAt).toLocaleDateString('en-IN', { 
+                day: 'numeric', 
+                month: 'short', 
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}</strong>
+            </div>
+            ${order.completedAt ? `
+            <div class="detail-row">
+              <span><i class="bi bi-check-circle me-2"></i>Completed:</span>
+              <strong>${new Date(order.completedAt).toLocaleDateString('en-IN', { 
+                day: 'numeric', 
+                month: 'short', 
+                year: 'numeric'
+              })}</strong>
+            </div>
+            ` : ''}
+          </div>
+          
+          <div class="col-md-4 d-flex flex-column justify-content-between">
+            <div class="mb-3">
+              <small class="text-muted d-block mb-2">Status Progress</small>
+              <div class="progress" style="height: 8px;">
+                <div class="progress-bar bg-success" role="progressbar" 
+                     style="width: ${getProgressWidth(order.status)}%" 
+                     aria-valuenow="${getProgressWidth(order.status)}" 
+                     aria-valuemin="0" 
+                     aria-valuemax="100">
+                </div>
+              </div>
+              <small class="text-muted d-block mt-1">${getProgressWidth(order.status)}% Complete</small>
+            </div>
+
+            <div class="d-grid gap-2">
+              <button class="btn btn-outline-success btn-sm" onclick="viewEquipmentDetail('${order.id}')">
+                <i class="bi bi-eye me-2"></i>View Details
+              </button>
+
+              ${canComplete ? `
+              <button class="btn btn-success btn-sm" onclick="markEquipmentFulfilled('${order.id}')">
+                <i class="bi bi-check-circle-fill me-2"></i>Mark as Fulfilled
+              </button>
+              ` : ''}
+
+              ${canCancel ? `
+              <button class="btn btn-outline-danger btn-sm" onclick="cancelEquipment('${order.id}')">
+                <i class="bi bi-x-circle me-2"></i>Cancel Request
+              </button>
+              ` : ''}
+
+              ${order.status === 'completed' && order.rating ? `
+              <div class="text-center mt-2">
+                <small class="text-muted d-block">Your Rating</small>
+                <div class="text-warning">
+                  ${'★'.repeat(order.rating)}${'☆'.repeat(5 - order.rating)}
+                </div>
+              </div>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;              
+}
+
+// Updated Crop Card Render (Replace your existing renderCropCard function)
+function renderCropCard(order) {
+  const canMarkSold = order.status === 'contacted' || order.status === 'negotiating' || order.status === 'active';
+  const canCancel = order.status !== 'cancelled' && order.status !== 'sold';
+  
+  return `
+    <div class="card order-card crop-card position-relative">
+      <span class="listing-type-badge crop-badge">
+        <i class="bi bi-flower2 me-1"></i>Crop Selling
+      </span>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-8">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <h5 class="card-title mb-1">${order.crop.name}</h5>
+                <p class="quotation-number mb-2">${order.listingNumber}</p>
+              </div>
+              <span class="status-badge status-${order.status}">${order.status}</span>
+            </div>
+            
+            <div class="detail-row">
+              <span><i class="bi bi-box-seam me-2"></i>Quantity:</span>
+              <strong>${order.cropDetails.quantity} Quintals</strong>
+            </div>
+            <div class="detail-row">
+              <span><i class="bi bi-star me-2"></i>Quality:</span>
+              <strong class="text-capitalize">${order.cropDetails.quality}</strong>
+            </div>
+            <div class="detail-row">
+              <span><i class="bi bi-cash me-2"></i>Expected Price:</span>
+              <strong>₹${order.cropDetails.expectedPrice}/quintal</strong>
+            </div>
+            ${order.finalPrice ? `
+            <div class="detail-row">
+              <span><i class="bi bi-currency-rupee me-2 text-success"></i>Sold Price:</span>
+              <strong class="text-success">₹${order.finalPrice}/quintal</strong>
+            </div>
+            ` : ''}
+            <div class="detail-row">
+              <span><i class="bi bi-calendar-event me-2"></i>Listed:</span>
+              <strong>${new Date(order.createdAt).toLocaleDateString('en-IN', { 
+                day: 'numeric', 
+                month: 'short', 
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}</strong>
+            </div>
+            ${order.soldDate ? `
+            <div class="detail-row">
+              <span><i class="bi bi-check-circle me-2"></i>Sold On:</span>
+              <strong>${new Date(order.soldDate).toLocaleDateString('en-IN', { 
+                day: 'numeric', 
+                month: 'short', 
+                year: 'numeric'
+              })}</strong>
+            </div>
+            ` : ''}
+          </div>
+          
+          <div class="col-md-4 d-flex flex-column justify-content-between">
+            <div class="mb-3">
+              <small class="text-muted d-block mb-2">Status Progress</small>
+              <div class="progress" style="height: 8px;">
+                <div class="progress-bar bg-warning" role="progressbar" 
+                     style="width: ${getCropProgressWidth(order.status)}%" 
+                     aria-valuenow="${getCropProgressWidth(order.status)}" 
+                     aria-valuemin="0" 
+                     aria-valuemax="100">
+                </div>
+              </div>
+              <small class="text-muted d-block mt-1">${getCropProgressWidth(order.status)}% Complete</small>
+            </div>
+
+            <div class="d-grid gap-2">
+              <button class="btn btn-outline-warning btn-sm" onclick="viewCropDetail('${order.id}')">
+                <i class="bi bi-eye me-2"></i>View Details
+              </button>
+
+              ${order.buyerContacts && order.buyerContacts.length > 0 ? `
+              <span class="badge bg-success">
+                <i class="bi bi-telephone me-1"></i>${order.buyerContacts.length} Buyer(s) Contacted
+              </span>
+              ` : ''}
+
+              ${canMarkSold ? `
+              <button class="btn btn-warning btn-sm" onclick="markAsSold('${order.id}')">
+                <i class="bi bi-check-circle-fill me-2"></i>Mark as Sold
+              </button>
+              ` : ''}
+
+              ${canCancel ? `
+              <button class="btn btn-outline-danger btn-sm" onclick="cancelCropListing('${order.id}')">
+                <i class="bi bi-x-circle me-2"></i>Cancel Listing
+              </button>
+              ` : ''}
+
+              ${order.status === 'sold' && order.soldTo ? `
+              <div class="alert alert-success p-2 mb-0 mt-2">
+                <small><strong>Sold to:</strong> ${order.soldTo}</small>
+                ${order.paymentReceived ? '<br><small><i class="bi bi-check-circle me-1"></i>Payment Received</small>' : ''}
+              </div>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
   </script>
+  <!-- Equipment Fulfillment Modal - Add this after your existing modals -->
+<div class="modal fade" id="fulfillEquipmentModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title">
+          <i class="bi bi-check-circle me-2"></i>Mark Equipment Request as Fulfilled
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="fulfillEquipmentForm">
+          <input type="hidden" id="fulfillEquipmentId">
+          
+          <div class="alert alert-success">
+            <i class="bi bi-info-circle me-2"></i>
+            Great! Please confirm that you've received the equipment/service and share your experience.
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Rate Your Experience *</label>
+            <select class="form-select form-select-lg" id="equipmentRating" required>
+              <option value="">Select Rating</option>
+              <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+              <option value="4">⭐⭐⭐⭐ Very Good</option>
+              <option value="3">⭐⭐⭐ Good</option>
+              <option value="2">⭐⭐ Fair</option>
+              <option value="1">⭐ Poor</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Your Feedback (Optional)</label>
+            <textarea class="form-control" id="equipmentFeedback" rows="4" 
+                      placeholder="Share your experience with the equipment/supplier...&#10;&#10;• How was the quality?&#10;• Was it delivered on time?&#10;• Would you recommend this supplier?"></textarea>
+            <small class="text-muted">Your feedback helps improve our service</small>
+          </div>
+
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="equipmentPaymentConfirm" required>
+            <label class="form-check-label" for="equipmentPaymentConfirm">
+              I confirm that payment has been completed
+            </label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-success" onclick="confirmEquipmentFulfilled()">
+          <i class="bi bi-check-circle me-2"></i>Mark as Fulfilled
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Updated Mark as Sold Modal - Replace your existing markSoldModal -->
+<div class="modal fade" id="markSoldModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-warning text-dark">
+        <h5 class="modal-title">
+          <i class="bi bi-check-circle me-2"></i>Mark Crop as Sold
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="markSoldForm">
+          <input type="hidden" id="soldCropId">
+          
+          <div class="alert alert-success">
+            <i class="bi bi-trophy me-2"></i>
+            Congratulations on your sale! Please provide the sale details below.
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Sold To (Buyer Name) *</label>
+            <input type="text" class="form-control" id="soldTo" 
+                   placeholder="Enter buyer's name or company" required>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Final Price (₹/quintal) *</label>
+              <input type="number" class="form-control" id="finalPrice" 
+                     placeholder="Final selling price" min="0" step="0.01" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Quantity Sold (Quintals) *</label>
+              <input type="number" class="form-control" id="soldQuantity" 
+                     placeholder="Quantity sold" min="0.1" step="0.1" required>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Sale Date *</label>
+            <input type="date" class="form-control" id="soldDate" required>
+          </div>
+
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="paymentReceived">
+            <label class="form-check-label" for="paymentReceived">
+              <strong>Payment has been received</strong>
+            </label>
+          </div>
+
+          <div class="alert alert-info">
+            <small>
+              <i class="bi bi-info-circle me-1"></i>
+              This will mark your listing as complete and update your sales history.
+            </small>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-warning" onclick="confirmMarkAsSold()">
+          <i class="bi bi-check-circle me-2"></i>Confirm Sale
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>

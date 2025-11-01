@@ -345,375 +345,465 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   
   <script>
-    const EQUIPMENT_API = 'http://localhost:5000/api/quotations';
-    const CROP_API = 'http://localhost:5000/api/crop-listings';
-    let allNotifications = [];
-    let readNotifications = new Set();
+   const EQUIPMENT_API = 'http://localhost:5000/api/quotations';
+const CROP_API = 'http://localhost:5000/api/crop-listings';
+let allNotifications = [];
+let readNotifications = new Set();
 
-    // Load from localStorage
-    window.addEventListener('DOMContentLoaded', () => {
-      const storedPhone = localStorage.getItem('supplierPhone');
-      if (storedPhone) {
-        document.getElementById('phoneInput').value = storedPhone;
-        loadNotifications();
-      }
-      
-      // Load read notifications
-      const stored = localStorage.getItem('readNotifications');
-      if (stored) {
-        readNotifications = new Set(JSON.parse(stored));
-      }
+// Helper function to get auth headers
+function getAuthHeaders() {
+  const token = localStorage.getItem('token');
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  };
+}
+
+// Check authentication and auto-load notifications on page load
+window.addEventListener('DOMContentLoaded', () => {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    alert('Please login to view your notifications');
+    window.location.href = 'Login.html';
+    return;
+  }
+  
+  // Load read notifications from localStorage
+  const stored = localStorage.getItem('readNotifications');
+  if (stored) {
+    readNotifications = new Set(JSON.parse(stored));
+  }
+  
+  // Hide phone number input section since we don't need it with authentication
+  const filterSection = document.querySelector('.filter-section');
+  if (filterSection) {
+    // Keep the filter section but remove phone input requirement
+    const phoneRow = filterSection.querySelector('.row:first-child');
+    if (phoneRow) {
+      phoneRow.style.display = 'none';
+    }
+    
+    // Update button to auto-load without phone
+    const loadButton = filterSection.querySelector('button.btn-success');
+    if (loadButton) {
+      loadButton.textContent = 'Refresh Notifications';
+      loadButton.innerHTML = '<i class="bi bi-arrow-clockwise me-2"></i>Refresh Notifications';
+    }
+  }
+  
+  // Auto-load notifications
+  loadNotifications();
+});
+
+// Load all notifications - USING AUTH TOKEN
+async function loadNotifications() {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    alert('Please login to continue');
+    window.location.href = 'Login.html';
+    return;
+  }
+
+  try {
+    // Get equipment requests where user is the customer
+    const equipmentRes = await fetch(`${EQUIPMENT_API}/my-quotations`, {
+      headers: getAuthHeaders()
+    });
+    
+    // Get crop listings for this seller
+    const cropRes = await fetch(`${CROP_API}/my-listings`, {
+      headers: getAuthHeaders()
     });
 
-    // Load all notifications
-    async function loadNotifications() {
-      const phone = document.getElementById('phoneInput').value.trim();
-      
-      if (!phone || phone.length !== 10) {
-        alert('Please enter a valid 10-digit phone number');
-        return;
-      }
+    // Check for authentication errors
+    if (equipmentRes.status === 401 || cropRes.status === 401) {
+      alert('Session expired. Please login again');
+      localStorage.removeItem('token');
+      localStorage.removeItem('username');
+      localStorage.removeItem('fullname');
+      window.location.href = 'Login.html';
+      return;
+    }
 
-      localStorage.setItem('supplierPhone', phone);
+    const equipmentData = await equipmentRes.json();
+    const cropData = await cropRes.json();
 
-      try {
-        // Get equipment requests where this phone accepted
-        const equipmentRes = await fetch(`${EQUIPMENT_API}?limit=100`);
-        const equipmentData = await equipmentRes.json();
+    allNotifications = [];
 
-        // Get crop listings for this seller
-        const cropRes = await fetch(`${CROP_API}/seller/${phone}`);
-        const cropData = await cropRes.json();
-
-        allNotifications = [];
-
-        // Process equipment notifications (where supplier accepted)
-        if (equipmentData.success) {
-          equipmentData.data.forEach(item => {
-            if (item.acceptedContact === phone && item.status === 'approved') {
-              allNotifications.push({
-                id: `eq-${item._id}`,
-                type: 'equipment',
-                title: `New Equipment Request Accepted`,
-                message: `You accepted a request for ${item.equipment.name}`,
-                customer: item.customerDetails,
-                equipment: item.equipment,
-                quotationType: item.quotationType,
-                timestamp: item.acceptedAt || item.updatedAt,
-                isRead: readNotifications.has(`eq-${item._id}`)
-              });
-            }
+    // Process equipment notifications (where supplier accepted your request)
+    if (equipmentData.success) {
+      equipmentData.data.forEach(item => {
+        // Notification when equipment request is accepted/approved
+        if (item.status === 'approved' && item.acceptedBy) {
+          allNotifications.push({
+            id: `eq-${item._id}`,
+            type: 'equipment',
+            title: `Equipment Request Accepted`,
+            message: `Your request for ${item.equipment.name} has been accepted by ${item.acceptedBy}`,
+            customer: item.customerDetails,
+            equipment: item.equipment,
+            quotationType: item.quotationType,
+            acceptedBy: item.acceptedBy,
+            supplierContact: item.acceptedContact,
+            timestamp: item.acceptedAt || item.updatedAt,
+            isRead: readNotifications.has(`eq-${item._id}`)
           });
         }
-
-        // Process crop notifications (buyer contacts)
-        if (cropData.success) {
-          cropData.data.forEach(listing => {
-            if (listing.buyerContacts && listing.buyerContacts.length > 0) {
-              listing.buyerContacts.forEach(buyer => {
-                const notifId = `crop-${listing._id}-${buyer.buyerPhone}`;
-                allNotifications.push({
-                  id: notifId,
-                  type: 'crop',
-                  title: `Buyer Interested in Your Crop`,
-                  message: `${buyer.buyerName} is interested in ${listing.crop.name}`,
-                  buyer: buyer,
-                  crop: listing.crop,
-                  cropDetails: listing.cropDetails,
-                  listingNumber: listing.listingNumber,
-                  timestamp: buyer.contactedAt,
-                  isRead: readNotifications.has(notifId)
-                });
-              });
-            }
+        
+        // Notification for status changes
+        if (item.status === 'contacted' || item.status === 'quoted') {
+          allNotifications.push({
+            id: `eq-status-${item._id}`,
+            type: 'equipment',
+            title: `Equipment Request Update`,
+            message: `Your request for ${item.equipment.name} status: ${item.status}`,
+            customer: item.customerDetails,
+            equipment: item.equipment,
+            quotationType: item.quotationType,
+            timestamp: item.updatedAt,
+            isRead: readNotifications.has(`eq-status-${item._id}`)
           });
         }
-
-        // Sort by timestamp (newest first)
-        allNotifications.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-        displayNotifications();
-        updateStats();
-
-      } catch (error) {
-        console.error('Error loading notifications:', error);
-        alert('Failed to load notifications. Please try again.');
-      }
-    }
-
-    // Display notifications
-    function displayNotifications() {
-      const container = document.getElementById('notificationsContainer');
-      const typeFilter = document.getElementById('typeFilter').value;
-
-      let filtered = allNotifications;
-
-      if (typeFilter === 'equipment') {
-        filtered = filtered.filter(n => n.type === 'equipment');
-      } else if (typeFilter === 'crop') {
-        filtered = filtered.filter(n => n.type === 'crop');
-      } else if (typeFilter === 'unread') {
-        filtered = filtered.filter(n => !n.isRead);
-      }
-
-      if (filtered.length === 0) {
-        container.innerHTML = `
-          <div class="empty-state">
-            <i class="bi bi-bell-slash"></i>
-            <h4 class="text-muted">No Notifications Found</h4>
-            <p class="text-muted">No customer interest yet for your listings</p>
-          </div>
-        `;
-        return;
-      }
-
-      container.innerHTML = filtered.map(notif => {
-        if (notif.type === 'equipment') {
-          return renderEquipmentNotification(notif);
-        } else {
-          return renderCropNotification(notif);
-        }
-      }).join('');
-    }
-
-    // Render equipment notification
-    function renderEquipmentNotification(notif) {
-      return `
-        <div class="notification-card ${notif.isRead ? '' : 'unread'} equipment">
-          ${!notif.isRead ? '<span class="notification-badge badge-new">NEW</span>' : ''}
-          <span class="notification-badge badge-equipment" style="right: ${!notif.isRead ? '70px' : '15px'}">
-            <i class="bi bi-gear me-1"></i>Equipment
-          </span>
-          
-          <button class="mark-read-btn" onclick="markAsRead('${notif.id}')" title="Mark as read">
-            <i class="bi bi-check2"></i>
-          </button>
-
-          <div class="d-flex">
-            <div class="notification-icon icon-equipment">
-              <i class="bi bi-gear-fill"></i>
-            </div>
-            <div class="flex-grow-1">
-              <h5 class="mb-1">${notif.title}</h5>
-              <p class="mb-2 text-muted">${notif.message}</p>
-              
-              <div class="contact-info">
-                <div class="row">
-                  <div class="col-md-6">
-                    <p class="mb-1"><strong>Equipment:</strong> ${notif.equipment.name}</p>
-                    <p class="mb-1"><strong>Type:</strong> ${notif.quotationType}</p>
-                    <p class="mb-0"><strong>Price:</strong> ${notif.quotationType === 'rental' ? notif.equipment.rentalPrice : notif.equipment.price}</p>
-                  </div>
-                  <div class="col-md-6">
-                    <p class="mb-1"><strong>Customer:</strong> ${notif.customer.name}</p>
-                    <p class="mb-1"><strong>Phone:</strong> ${notif.customer.phone}</p>
-                    <p class="mb-0"><strong>Location:</strong> ${notif.customer.location}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div class="action-buttons">
-                <a href="tel:${notif.customer.phone}" class="btn btn-success btn-sm">
-                  <i class="bi bi-telephone me-1"></i>Call Customer
-                </a>
-                <a href="https://wa.me/91${notif.customer.phone}" target="_blank" class="btn btn-success btn-sm">
-                  <i class="bi bi-whatsapp me-1"></i>WhatsApp
-                </a>
-                <button class="btn btn-outline-info btn-sm" onclick="viewFullDetails('equipment', '${notif.id}')">
-                  <i class="bi bi-eye me-1"></i>View Details
-                </button>
-              </div>
-
-              <div class="time-ago mt-2">
-                <i class="bi bi-clock"></i>
-                <span>${getTimeAgo(notif.timestamp)}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    // Render crop notification
-    function renderCropNotification(notif) {
-      return `
-        <div class="notification-card ${notif.isRead ? '' : 'unread'} crop">
-          ${!notif.isRead ? '<span class="notification-badge badge-new">NEW</span>' : ''}
-          <span class="notification-badge badge-crop" style="right: ${!notif.isRead ? '70px' : '15px'}">
-            <i class="bi bi-flower2 me-1"></i>Crop
-          </span>
-          
-          <button class="mark-read-btn" onclick="markAsRead('${notif.id}')" title="Mark as read">
-            <i class="bi bi-check2"></i>
-          </button>
-
-          <div class="d-flex">
-            <div class="notification-icon icon-crop">
-              <i class="bi bi-flower2"></i>
-            </div>
-            <div class="flex-grow-1">
-              <h5 class="mb-1">${notif.title}</h5>
-              <p class="mb-2 text-muted">${notif.message}</p>
-              
-              <div class="contact-info">
-                <div class="row">
-                  <div class="col-md-6">
-                    <p class="mb-1"><strong>Crop:</strong> ${notif.crop.name}</p>
-                    <p class="mb-1"><strong>Quantity:</strong> ${notif.cropDetails.quantity} quintals</p>
-                    <p class="mb-0"><strong>Your Price:</strong> ₹${notif.cropDetails.expectedPrice}/qt</p>
-                  </div>
-                  <div class="col-md-6">
-                    <p class="mb-1"><strong>Buyer:</strong> ${notif.buyer.buyerName}</p>
-                    <p class="mb-1"><strong>Phone:</strong> ${notif.buyer.buyerPhone}</p>
-                    <p class="mb-0"><strong>Offered Price:</strong> ₹${notif.buyer.offeredPrice}/qt</p>
-                  </div>
-                </div>
-              </div>
-
-              <div class="action-buttons">
-                <a href="tel:${notif.buyer.buyerPhone}" class="btn btn-warning btn-sm">
-                  <i class="bi bi-telephone me-1"></i>Call Buyer
-                </a>
-                <a href="https://wa.me/91${notif.buyer.buyerPhone}" target="_blank" class="btn btn-warning btn-sm">
-                  <i class="bi bi-whatsapp me-1"></i>WhatsApp
-                </a>
-                <button class="btn btn-outline-info btn-sm" onclick="viewFullDetails('crop', '${notif.id}')">
-                  <i class="bi bi-eye me-1"></i>View Details
-                </button>
-              </div>
-
-              <div class="time-ago mt-2">
-                <i class="bi bi-clock"></i>
-                <span>${getTimeAgo(notif.timestamp)}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    // Mark as read
-    function markAsRead(notifId) {
-      readNotifications.add(notifId);
-      localStorage.setItem('readNotifications', JSON.stringify([...readNotifications]));
-      
-      const notif = allNotifications.find(n => n.id === notifId);
-      if (notif) {
-        notif.isRead = true;
-      }
-      
-      displayNotifications();
-      updateStats();
-    }
-
-    // Mark all as read
-    function markAllAsRead() {
-      allNotifications.forEach(notif => {
-        readNotifications.add(notif.id);
-        notif.isRead = true;
       });
+    }
+
+    // Process crop notifications (when buyers contact you about your listings)
+    if (cropData.success) {
+      cropData.data.forEach(listing => {
+        if (listing.buyerContacts && listing.buyerContacts.length > 0) {
+          listing.buyerContacts.forEach(buyer => {
+            const notifId = `crop-${listing._id}-${buyer.buyerPhone}`;
+            allNotifications.push({
+              id: notifId,
+              type: 'crop',
+              title: `Buyer Interested in Your Crop`,
+              message: `${buyer.buyerName} is interested in your ${listing.crop.name}`,
+              buyer: buyer,
+              crop: listing.crop,
+              cropDetails: listing.cropDetails,
+              listingNumber: listing.listingNumber,
+              seller: listing.seller,
+              timestamp: buyer.contactedAt,
+              isRead: readNotifications.has(notifId)
+            });
+          });
+        }
+      });
+    }
+
+    // Sort by timestamp (newest first)
+    allNotifications.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    displayNotifications();
+    updateStats();
+
+  } catch (error) {
+    console.error('Error loading notifications:', error);
+    alert('Failed to load notifications. Please try again.');
+  }
+}
+
+// Display notifications
+function displayNotifications() {
+  const container = document.getElementById('notificationsContainer');
+  const typeFilter = document.getElementById('typeFilter').value;
+
+  let filtered = allNotifications;
+
+  if (typeFilter === 'equipment') {
+    filtered = filtered.filter(n => n.type === 'equipment');
+  } else if (typeFilter === 'crop') {
+    filtered = filtered.filter(n => n.type === 'crop');
+  } else if (typeFilter === 'unread') {
+    filtered = filtered.filter(n => !n.isRead);
+  }
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <i class="bi bi-bell-slash"></i>
+        <h4 class="text-muted">No Notifications Found</h4>
+        <p class="text-muted">You don't have any notifications yet. Notifications will appear when:</p>
+        <ul class="text-start" style="max-width: 400px; margin: 20px auto;">
+          <li>A supplier accepts your equipment request</li>
+          <li>A buyer shows interest in your crop listing</li>
+          <li>Your request/listing status changes</li>
+        </ul>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = filtered.map(notif => {
+    if (notif.type === 'equipment') {
+      return renderEquipmentNotification(notif);
+    } else {
+      return renderCropNotification(notif);
+    }
+  }).join('');
+}
+
+// Render equipment notification
+function renderEquipmentNotification(notif) {
+  return `
+    <div class="notification-card ${notif.isRead ? '' : 'unread'} equipment">
+      ${!notif.isRead ? '<span class="notification-badge badge-new">NEW</span>' : ''}
+      <span class="notification-badge badge-equipment" style="right: ${!notif.isRead ? '70px' : '15px'}">
+        <i class="bi bi-gear me-1"></i>Equipment
+      </span>
       
-      localStorage.setItem('readNotifications', JSON.stringify([...readNotifications]));
-      displayNotifications();
-      updateStats();
-    }
+      <button class="mark-read-btn" onclick="markAsRead('${notif.id}')" title="Mark as read">
+        <i class="bi bi-check2"></i>
+      </button>
 
-    // Refresh notifications
-    function refreshNotifications() {
-      loadNotifications();
-    }
+      <div class="d-flex">
+        <div class="notification-icon icon-equipment">
+          <i class="bi bi-gear-fill"></i>
+        </div>
+        <div class="flex-grow-1">
+          <h5 class="mb-1">${notif.title}</h5>
+          <p class="mb-2 text-muted">${notif.message}</p>
+          
+          <div class="contact-info">
+            <div class="row">
+              <div class="col-md-6">
+                <p class="mb-1"><strong>Equipment:</strong> ${notif.equipment.name}</p>
+                <p class="mb-1"><strong>Type:</strong> ${notif.quotationType}</p>
+                <p class="mb-0"><strong>Price:</strong> ${notif.quotationType === 'rental' ? notif.equipment.rentalPrice : notif.equipment.price}</p>
+              </div>
+              <div class="col-md-6">
+                ${notif.acceptedBy ? `
+                  <p class="mb-1"><strong>Accepted By:</strong> ${notif.acceptedBy}</p>
+                  ${notif.supplierContact ? `<p class="mb-1"><strong>Contact:</strong> ${notif.supplierContact}</p>` : ''}
+                ` : `
+                  <p class="mb-1"><strong>Your Name:</strong> ${notif.customer.name}</p>
+                  <p class="mb-0"><strong>Location:</strong> ${notif.customer.location}</p>
+                `}
+              </div>
+            </div>
+          </div>
 
-    // Update statistics
-    function updateStats() {
-      const unreadCount = allNotifications.filter(n => !n.isRead).length;
-      const equipmentCount = allNotifications.filter(n => n.type === 'equipment').length;
-      const cropCount = allNotifications.filter(n => n.type === 'crop').length;
+          <div class="action-buttons">
+            ${notif.supplierContact ? `
+              <a href="tel:${notif.supplierContact}" class="btn btn-success btn-sm">
+                <i class="bi bi-telephone me-1"></i>Call Supplier
+              </a>
+              <a href="https://wa.me/91${notif.supplierContact}" target="_blank" class="btn btn-success btn-sm">
+                <i class="bi bi-whatsapp me-1"></i>WhatsApp
+              </a>
+            ` : ''}
+            <button class="btn btn-outline-info btn-sm" onclick="viewFullDetails('equipment', '${notif.id}')">
+              <i class="bi bi-eye me-1"></i>View Details
+            </button>
+          </div>
 
-      document.getElementById('totalNotifications').textContent = allNotifications.length;
-      document.getElementById('unreadCount').textContent = unreadCount;
-      document.getElementById('equipmentNotifications').textContent = equipmentCount;
-      document.getElementById('cropNotifications').textContent = cropCount;
-    }
-
-    // View full details
-    function viewFullDetails(type, notifId) {
-      const notif = allNotifications.find(n => n.id === notifId);
-      if (!notif) return;
-
-      let html = '';
-      if (type === 'equipment') {
-        html = `
-          <h6 class="text-success mb-3">Equipment Request Details</h6>
-          <p><strong>Equipment:</strong> ${notif.equipment.name}</p>
-          <p><strong>Category:</strong> ${notif.equipment.category}</p>
-          <p><strong>Type:</strong> ${notif.quotationType}</p>
-          <p><strong>Price:</strong> ${notif.quotationType === 'rental' ? notif.equipment.rentalPrice : notif.equipment.price}</p>
-          <hr>
-          <h6 class="text-success mb-3">Customer Details</h6>
-          <p><strong>Name:</strong> ${notif.customer.name}</p>
-          <p><strong>Phone:</strong> <a href="tel:${notif.customer.phone}">${notif.customer.phone}</a></p>
-          ${notif.customer.email ? `<p><strong>Email:</strong> ${notif.customer.email}</p>` : ''}
-          <p><strong>Location:</strong> ${notif.customer.location}</p>
-          ${notif.customer.landSize ? `<p><strong>Land Size:</strong> ${notif.customer.landSize} acres</p>` : ''}
-        `;
-      } else {
-        html = `
-          <h6 class="text-success mb-3">Crop Listing Details</h6>
-          <p><strong>Crop:</strong> ${notif.crop.name}</p>
-          <p><strong>Category:</strong> ${notif.crop.category}</p>
-          <p><strong>Quantity:</strong> ${notif.cropDetails.quantity} quintals</p>
-          <p><strong>Quality:</strong> ${notif.cropDetails.quality}</p>
-          <p><strong>Your Expected Price:</strong> ₹${notif.cropDetails.expectedPrice}/quintal</p>
-          <p><strong>Listing Number:</strong> ${notif.listingNumber}</p>
-          <hr>
-          <h6 class="text-success mb-3">Buyer Details</h6>
-          <p><strong>Name:</strong> ${notif.buyer.buyerName}</p>
-          <p><strong>Phone:</strong> <a href="tel:${notif.buyer.buyerPhone}">${notif.buyer.buyerPhone}</a></p>
-          <p><strong>Offered Price:</strong> ₹${notif.buyer.offeredPrice}/quintal</p>
-        `;
-      }
-
-      html += `
-        <div class="alert alert-success mt-3">
-          <div class="d-flex gap-2">
-            <a href="tel:${type === 'equipment' ? notif.customer.phone : notif.buyer.buyerPhone}" class="btn btn-success flex-fill">
-              <i class="bi bi-telephone me-2"></i>Call Now
-            </a>
-            <a href="https://wa.me/91${type === 'equipment' ? notif.customer.phone : notif.buyer.buyerPhone}" target="_blank" class="btn btn-success flex-fill">
-              <i class="bi bi-whatsapp me-2"></i>WhatsApp
-            </a>
+          <div class="time-ago mt-2">
+            <i class="bi bi-clock"></i>
+            <span>${getTimeAgo(notif.timestamp)}</span>
           </div>
         </div>
-      `;
+      </div>
+    </div>
+  `;
+}
 
-      document.getElementById('contactModalBody').innerHTML = html;
-      new bootstrap.Modal(document.getElementById('contactModal')).show();
-    }
+// Render crop notification
+function renderCropNotification(notif) {
+  return `
+    <div class="notification-card ${notif.isRead ? '' : 'unread'} crop">
+      ${!notif.isRead ? '<span class="notification-badge badge-new">NEW</span>' : ''}
+      <span class="notification-badge badge-crop" style="right: ${!notif.isRead ? '70px' : '15px'}">
+        <i class="bi bi-flower2 me-1"></i>Crop
+      </span>
+      
+      <button class="mark-read-btn" onclick="markAsRead('${notif.id}')" title="Mark as read">
+        <i class="bi bi-check2"></i>
+      </button>
 
-    // Helper: Get time ago
-    function getTimeAgo(dateString) {
-      const now = new Date();
-      const date = new Date(dateString);
-      const seconds = Math.floor((now - date) / 1000);
+      <div class="d-flex">
+        <div class="notification-icon icon-crop">
+          <i class="bi bi-flower2"></i>
+        </div>
+        <div class="flex-grow-1">
+          <h5 class="mb-1">${notif.title}</h5>
+          <p class="mb-2 text-muted">${notif.message}</p>
+          
+          <div class="contact-info">
+            <div class="row">
+              <div class="col-md-6">
+                <p class="mb-1"><strong>Crop:</strong> ${notif.crop.name}</p>
+                <p class="mb-1"><strong>Quantity:</strong> ${notif.cropDetails.quantity} quintals</p>
+                <p class="mb-0"><strong>Your Price:</strong> ₹${notif.cropDetails.expectedPrice}/qt</p>
+              </div>
+              <div class="col-md-6">
+                <p class="mb-1"><strong>Buyer:</strong> ${notif.buyer.buyerName}</p>
+                <p class="mb-1"><strong>Phone:</strong> ${notif.buyer.buyerPhone}</p>
+                ${notif.buyer.offeredPrice ? `<p class="mb-0"><strong>Offered Price:</strong> ₹${notif.buyer.offeredPrice}/qt</p>` : ''}
+              </div>
+            </div>
+          </div>
 
-      if (seconds < 60) return 'Just now';
-      if (seconds < 3600) return Math.floor(seconds / 60) + ' minutes ago';
-      if (seconds < 86400) return Math.floor(seconds / 3600) + ' hours ago';
-      if (seconds < 604800) return Math.floor(seconds / 86400) + ' days ago';
-      return date.toLocaleDateString('en-IN');
-    }
+          <div class="action-buttons">
+            <a href="tel:${notif.buyer.buyerPhone}" class="btn btn-warning btn-sm">
+              <i class="bi bi-telephone me-1"></i>Call Buyer
+            </a>
+            <a href="https://wa.me/91${notif.buyer.buyerPhone}" target="_blank" class="btn btn-warning btn-sm">
+              <i class="bi bi-whatsapp me-1"></i>WhatsApp
+            </a>
+            <button class="btn btn-outline-info btn-sm" onclick="viewFullDetails('crop', '${notif.id}')">
+              <i class="bi bi-eye me-1"></i>View Details
+            </button>
+          </div>
 
-    // Type filter change
-    document.getElementById('typeFilter').addEventListener('change', displayNotifications);
+          <div class="time-ago mt-2">
+            <i class="bi bi-clock"></i>
+            <span>${getTimeAgo(notif.timestamp)}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
 
-    // Logout
-    document.getElementById('logoutBtn').addEventListener('click', (e) => {
-      e.preventDefault();
-      if (confirm('Are you sure you want to logout?')) {
-        localStorage.removeItem('supplierPhone');
-        window.location.href = 'index.html';
-      }
-    });
+// Mark as read
+function markAsRead(notifId) {
+  readNotifications.add(notifId);
+  localStorage.setItem('readNotifications', JSON.stringify([...readNotifications]));
+  
+  const notif = allNotifications.find(n => n.id === notifId);
+  if (notif) {
+    notif.isRead = true;
+  }
+  
+  displayNotifications();
+  updateStats();
+}
+
+// Mark all as read
+function markAllAsRead() {
+  allNotifications.forEach(notif => {
+    readNotifications.add(notif.id);
+    notif.isRead = true;
+  });
+  
+  localStorage.setItem('readNotifications', JSON.stringify([...readNotifications]));
+  displayNotifications();
+  updateStats();
+}
+
+// Refresh notifications
+function refreshNotifications() {
+  loadNotifications();
+}
+
+// Update statistics
+function updateStats() {
+  const unreadCount = allNotifications.filter(n => !n.isRead).length;
+  const equipmentCount = allNotifications.filter(n => n.type === 'equipment').length;
+  const cropCount = allNotifications.filter(n => n.type === 'crop').length;
+
+  document.getElementById('totalNotifications').textContent = allNotifications.length;
+  document.getElementById('unreadCount').textContent = unreadCount;
+  document.getElementById('equipmentNotifications').textContent = equipmentCount;
+  document.getElementById('cropNotifications').textContent = cropCount;
+}
+
+// View full details
+function viewFullDetails(type, notifId) {
+  const notif = allNotifications.find(n => n.id === notifId);
+  if (!notif) return;
+
+  let html = '';
+  if (type === 'equipment') {
+    html = `
+      <h6 class="text-success mb-3">Equipment Request Details</h6>
+      <p><strong>Equipment:</strong> ${notif.equipment.name}</p>
+      <p><strong>Category:</strong> ${notif.equipment.category}</p>
+      <p><strong>Type:</strong> ${notif.quotationType}</p>
+      <p><strong>Price:</strong> ${notif.quotationType === 'rental' ? notif.equipment.rentalPrice : notif.equipment.price}</p>
+      <hr>
+      ${notif.acceptedBy ? `
+        <h6 class="text-success mb-3">Supplier Details</h6>
+        <p><strong>Name:</strong> ${notif.acceptedBy}</p>
+        ${notif.supplierContact ? `
+          <p><strong>Phone:</strong> <a href="tel:${notif.supplierContact}">${notif.supplierContact}</a></p>
+          <div class="alert alert-success mt-3">
+            <div class="d-flex gap-2">
+              <a href="tel:${notif.supplierContact}" class="btn btn-success flex-fill">
+                <i class="bi bi-telephone me-2"></i>Call Now
+              </a>
+              <a href="https://wa.me/91${notif.supplierContact}" target="_blank" class="btn btn-success flex-fill">
+                <i class="bi bi-whatsapp me-2"></i>WhatsApp
+              </a>
+            </div>
+          </div>
+        ` : ''}
+      ` : `
+        <h6 class="text-success mb-3">Your Details</h6>
+        <p><strong>Name:</strong> ${notif.customer.name}</p>
+        <p><strong>Phone:</strong> ${notif.customer.phone}</p>
+        <p><strong>Location:</strong> ${notif.customer.location}</p>
+      `}
+    `;
+  } else {
+    html = `
+      <h6 class="text-success mb-3">Crop Listing Details</h6>
+      <p><strong>Crop:</strong> ${notif.crop.name}</p>
+      <p><strong>Category:</strong> ${notif.crop.category}</p>
+      <p><strong>Quantity:</strong> ${notif.cropDetails.quantity} quintals</p>
+      <p><strong>Quality:</strong> ${notif.cropDetails.quality}</p>
+      <p><strong>Your Expected Price:</strong> ₹${notif.cropDetails.expectedPrice}/quintal</p>
+      <p><strong>Listing Number:</strong> ${notif.listingNumber}</p>
+      <hr>
+      <h6 class="text-success mb-3">Buyer Details</h6>
+      <p><strong>Name:</strong> ${notif.buyer.buyerName}</p>
+      <p><strong>Phone:</strong> <a href="tel:${notif.buyer.buyerPhone}">${notif.buyer.buyerPhone}</a></p>
+      ${notif.buyer.offeredPrice ? `<p><strong>Offered Price:</strong> ₹${notif.buyer.offeredPrice}/quintal</p>` : ''}
+      <div class="alert alert-success mt-3">
+        <div class="d-flex gap-2">
+          <a href="tel:${notif.buyer.buyerPhone}" class="btn btn-success flex-fill">
+            <i class="bi bi-telephone me-2"></i>Call Now
+          </a>
+          <a href="https://wa.me/91${notif.buyer.buyerPhone}" target="_blank" class="btn btn-success flex-fill">
+            <i class="bi bi-whatsapp me-2"></i>WhatsApp
+          </a>
+        </div>
+      </div>
+    `;
+  }
+
+  document.getElementById('contactModalBody').innerHTML = html;
+  new bootstrap.Modal(document.getElementById('contactModal')).show();
+}
+
+// Helper: Get time ago
+function getTimeAgo(dateString) {
+  const now = new Date();
+  const date = new Date(dateString);
+  const seconds = Math.floor((now - date) / 1000);
+
+  if (seconds < 60) return 'Just now';
+  if (seconds < 3600) return Math.floor(seconds / 60) + ' minutes ago';
+  if (seconds < 86400) return Math.floor(seconds / 3600) + ' hours ago';
+  if (seconds < 604800) return Math.floor(seconds / 86400) + ' days ago';
+  return date.toLocaleDateString('en-IN');
+}
+
+// Type filter change
+document.getElementById('typeFilter').addEventListener('change', displayNotifications);
+
+// Logout
+document.getElementById('logoutBtn').addEventListener('click', (e) => {
+  e.preventDefault();
+  if (confirm('Are you sure you want to logout?')) {
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    localStorage.removeItem('fullname');
+    window.location.href = 'Login.html';
+  }
+});
   </script>
 </body>
 </html>

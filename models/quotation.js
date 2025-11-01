@@ -14,6 +14,12 @@ const quotationSchema = new mongoose.Schema({
     enum: ['purchase', 'rental'],
     required: true
   },
+   userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',          // References the User model
+    required: true,       // Must be provided
+    index: true           // Indexed for faster queries
+  },
   customerDetails: {
     name: { type: String, required: true },
     phone: { 
@@ -54,6 +60,53 @@ const quotationSchema = new mongoose.Schema({
     addedAt: Date 
   }],
   
+   // Completion fields (ADD THESE)
+  rating: {
+    type: Number,
+    min: 1,
+    max: 5
+  },
+  feedback: {
+    type: String
+  },
+  completedBy: {
+    type: String
+  },
+  completedAt: {
+    type: Date
+  },
+
+  // Acceptance fields (if not already present)
+  acceptedBy: {
+    type: String
+  },
+  acceptedAt: {
+    type: Date
+  },
+  acceptedContact: {
+    type: String
+  },
+
+  // Cancellation fields (if not already present)
+  cancelledBy: {
+    type: String
+  },
+  cancelledAt: {
+    type: Date
+  },
+  cancelReason: {
+    type: String
+  },
+
+  // Status history (if not already present)
+  statusHistory: [{
+    status: String,
+    changedAt: Date,
+    changedBy: String,
+    notes: String,
+    rating: Number
+  }],
+
   // NEW FIELDS
   acceptedBy: String,
   acceptedAt: Date,
@@ -67,7 +120,8 @@ const quotationSchema = new mongoose.Schema({
     changedBy: String,
     notes: String
   }]
-}, {
+}, 
+{
   timestamps: true
 });
 
@@ -80,4 +134,7 @@ quotationSchema.pre('save', async function(next) {
   next();
 });
 
+
+
 module.exports = mongoose.model('Quotation', quotationSchema, 'quotation');
+

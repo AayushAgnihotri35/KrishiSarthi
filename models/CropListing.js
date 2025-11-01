@@ -7,6 +7,12 @@ const cropListingSchema = new mongoose.Schema({
     category: { type: String, required: true },
     msp: { type: String, required: true }
   },
+   userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',          // References the User model
+    required: true,       // Must be provided
+    index: true           // Indexed for faster queries
+  },
   seller: {
     name: { type: String, required: true },
     phone: { 

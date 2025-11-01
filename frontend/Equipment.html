@@ -557,156 +557,238 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   
   <script>
-    let currentQuoteType = 'purchase';
-    let currentEquipmentData = {};
+    // Check authentication on page load
+document.addEventListener('DOMContentLoaded', () => {
+  const token = localStorage.getItem('token');
+  const username = localStorage.getItem('username');
+  
+  if (!token) {
+    console.log('User not logged in - can view but cannot submit quotations');
+  }
+  
+  // Update navbar to show logged in state
+  if (token && username) {
+    const loginLink = document.getElementById('loginLink');
+    const signupLink = document.getElementById('signupLink');
+    const profileDropdown = document.querySelector('.profile-dropdown');
+    
+    if (loginLink) loginLink.style.display = 'none';
+    if (signupLink) signupLink.style.display = 'none';
+    if (profileDropdown) profileDropdown.style.display = 'block';
+  }
+});
 
-    // Initialize quote buttons
-    document.querySelectorAll('.request-quote-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        const equipmentName = this.getAttribute('data-equipment');
-        const price = this.getAttribute('data-price');
-        const rental = this.getAttribute('data-rental');
-        const subsidy = this.getAttribute('data-subsidy');
-        const category = this.getAttribute('data-category');
+// Helper function to get auth headers
+function getAuthHeaders() {
+  const token = localStorage.getItem('token');
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  };
+}
 
-        currentEquipmentData = {
-          name: equipmentName,
-          price: price,
-          rental: rental,
-          subsidy: subsidy,
-          category: category
-        };
+let currentQuoteType = 'purchase';
+let currentEquipmentData = {};
 
-        openQuoteModal();
-      });
-    });
+// Initialize quote buttons
+document.querySelectorAll('.request-quote-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const equipmentName = this.getAttribute('data-equipment');
+    const price = this.getAttribute('data-price');
+    const rental = this.getAttribute('data-rental');
+    const subsidy = this.getAttribute('data-subsidy');
+    const category = this.getAttribute('data-category');
 
-    function openQuoteModal() {
-      // Reset modal
-      document.getElementById('quoteForm').style.display = 'block';
-      document.getElementById('successMessage').style.display = 'none';
-      document.getElementById('modalFooter').style.display = 'flex';
-      document.getElementById('contactForm').reset();
-      currentQuoteType = 'purchase';
-      
-      // Set equipment details
-      document.getElementById('equipmentName').textContent = currentEquipmentData.name;
-      document.getElementById('equipmentCategory').textContent = currentEquipmentData.category;
-      document.getElementById('subsidyBadge').innerHTML = `<i class="bi bi-gift me-1"></i>Up to ${currentEquipmentData.subsidy} Subsidy`;
+    currentEquipmentData = {
+      name: equipmentName,
+      price: price,
+      rental: rental,
+      subsidy: subsidy,
+      category: category
+    };
+
+    openQuoteModal();
+  });
+});
+
+function openQuoteModal() {
+  // Reset modal
+  document.getElementById('quoteForm').style.display = 'block';
+  document.getElementById('successMessage').style.display = 'none';
+  document.getElementById('modalFooter').style.display = 'flex';
+  document.getElementById('contactForm').reset();
+  currentQuoteType = 'purchase';
+  
+  // Set equipment details
+  document.getElementById('equipmentName').textContent = currentEquipmentData.name;
+  document.getElementById('equipmentCategory').textContent = currentEquipmentData.category;
+  document.getElementById('subsidyBadge').innerHTML = `<i class="bi bi-gift me-1"></i>Up to ${currentEquipmentData.subsidy} Subsidy`;
+  document.getElementById('priceDisplay').textContent = currentEquipmentData.price;
+  document.getElementById('priceNote').textContent = 'Final price may vary based on location and specifications';
+
+  // Reset quote type buttons
+  document.querySelectorAll('.quote-type-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  document.querySelector('[data-type="purchase"]').classList.add('active');
+  document.querySelector('.rental-duration').classList.remove('active');
+
+  // Show modal
+  const modal = new bootstrap.Modal(document.getElementById('quoteModal'));
+  modal.show();
+}
+
+// Quote type selection
+document.querySelectorAll('.quote-type-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const type = this.getAttribute('data-type');
+    currentQuoteType = type;
+
+    // Update active state
+    document.querySelectorAll('.quote-type-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+
+    // Update price display
+    if (type === 'rental') {
+      document.getElementById('priceDisplay').textContent = currentEquipmentData.rental;
+      document.getElementById('priceNote').textContent = 'Rental rates may vary for longer durations';
+      document.querySelector('.rental-duration').classList.add('active');
+      document.getElementById('rentalDays').required = true;
+    } else {
       document.getElementById('priceDisplay').textContent = currentEquipmentData.price;
       document.getElementById('priceNote').textContent = 'Final price may vary based on location and specifications';
-
-      // Reset quote type buttons
-      document.querySelectorAll('.quote-type-btn').forEach(btn => {
-        btn.classList.remove('active');
-      });
-      document.querySelector('[data-type="purchase"]').classList.add('active');
       document.querySelector('.rental-duration').classList.remove('active');
-
-      // Show modal
-      const modal = new bootstrap.Modal(document.getElementById('quoteModal'));
-      modal.show();
+      document.getElementById('rentalDays').required = false;
     }
+  });
+});
 
-    // Quote type selection
-    document.querySelectorAll('.quote-type-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        const type = this.getAttribute('data-type');
-        currentQuoteType = type;
+// Submit quote request with authentication
+document.getElementById('submitQuote').addEventListener('click', async function() {
+  const form = document.getElementById('contactForm');
+  
+  // Check if user is logged in before submitting
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert('Please login to submit an equipment request');
+    // Save current form data for after login
+    const formData = {
+      equipment: currentEquipmentData,
+      quotationType: currentQuoteType,
+      fullName: document.getElementById('fullName').value,
+      phone: document.getElementById('phone').value,
+      email: document.getElementById('email').value,
+      location: document.getElementById('location').value,
+      landSize: document.getElementById('landSize').value,
+      rentalDays: document.getElementById('rentalDays').value,
+      subsidyInfo: document.getElementById('subsidyInfo').checked,
+      loanInfo: document.getElementById('loanInfo').checked,
+      insuranceInfo: document.getElementById('insuranceInfo').checked,
+      additionalNotes: document.getElementById('additionalNotes').value
+    };
+    localStorage.setItem('pendingQuotation', JSON.stringify(formData));
+    window.location.href = 'Login.html';
+    return;
+  }
+  
+  if (form.checkValidity()) {
+    // Disable button and show loading
+    const submitBtn = this;
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>Submitting...';
 
-        // Update active state
-        document.querySelectorAll('.quote-type-btn').forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
+    // Collect form data
+    const quotationData = {
+      equipment: {
+        name: currentEquipmentData.name,
+        category: currentEquipmentData.category,
+        price: currentEquipmentData.price,
+        rentalPrice: currentEquipmentData.rental,
+        subsidy: currentEquipmentData.subsidy
+      },
+      quotationType: currentQuoteType,
+      customerDetails: {
+        name: document.getElementById('fullName').value,
+        phone: document.getElementById('phone').value,
+        email: document.getElementById('email').value || null,
+        location: document.getElementById('location').value,
+        landSize: document.getElementById('landSize').value || null
+      },
+      rentalDuration: currentQuoteType === 'rental' ? document.getElementById('rentalDays').value : null,
+      interests: {
+        subsidy: document.getElementById('subsidyInfo').checked,
+        loan: document.getElementById('loanInfo').checked,
+        insurance: document.getElementById('insuranceInfo').checked
+      },
+      additionalNotes: document.getElementById('additionalNotes').value || null,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
 
-        // Update price display
-        if (type === 'rental') {
-          document.getElementById('priceDisplay').textContent = currentEquipmentData.rental;
-          document.getElementById('priceNote').textContent = 'Rental rates may vary for longer durations';
-          document.querySelector('.rental-duration').classList.add('active');
-          document.getElementById('rentalDays').required = true;
-        } else {
-          document.getElementById('priceDisplay').textContent = currentEquipmentData.price;
-          document.getElementById('priceNote').textContent = 'Final price may vary based on location and specifications';
-          document.querySelector('.rental-duration').classList.remove('active');
-          document.getElementById('rentalDays').required = false;
-        }
+    try {
+      // Send data to backend API with authentication
+      const response = await fetch('http://localhost:5000/api/quotations', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(quotationData)
       });
-    });
 
-    // Submit quote request
-    document.getElementById('submitQuote').addEventListener('click', async function() {
-      const form = document.getElementById('contactForm');
-      
-      if (form.checkValidity()) {
-        // Disable button and show loading
-        const submitBtn = this;
-        const originalText = submitBtn.innerHTML;
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>Submitting...';
+      const result = await response.json();
 
-        // Collect form data
-        const quotationData = {
-          equipment: {
-            name: currentEquipmentData.name,
-            category: currentEquipmentData.category,
-            price: currentEquipmentData.price,
-            rentalPrice: currentEquipmentData.rental,
-            subsidy: currentEquipmentData.subsidy
-          },
-          quotationType: currentQuoteType,
-          customerDetails: {
-            name: document.getElementById('fullName').value,
-            phone: document.getElementById('phone').value,
-            email: document.getElementById('email').value || null,
-            location: document.getElementById('location').value,
-            landSize: document.getElementById('landSize').value || null
-          },
-          rentalDuration: currentQuoteType === 'rental' ? document.getElementById('rentalDays').value : null,
-          interests: {
-            subsidy: document.getElementById('subsidyInfo').checked,
-            loan: document.getElementById('loanInfo').checked,
-            insurance: document.getElementById('insuranceInfo').checked
-          },
-          additionalNotes: document.getElementById('additionalNotes').value || null,
-          status: 'pending',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        };
+      // Reset button
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalText;
 
-        try {
-          // Send data to your backend API
-          const response = await fetch('http://localhost:5000/api/quotations', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(quotationData)
-          });
-
-          if (!response.ok) {
-            throw new Error('Failed to submit quotation');
-          }
-
-          const result = await response.json();
-          console.log('Quotation saved successfully:', result);
-
-          // Show success message
-          document.getElementById('quoteForm').style.display = 'none';
-          document.getElementById('successMessage').style.display = 'block';
-          document.getElementById('modalFooter').style.display = 'none';
-
-        } catch (error) {
-          console.error('Error submitting quotation:', error);
-          alert('Failed to submit quotation. Please try again or contact support.');
-          
-          // Re-enable button
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = originalText;
-        }
-      } else {
-        form.reportValidity();
+      // Handle authentication errors
+      if (response.status === 401) {
+        alert('Session expired. Please login again');
+        localStorage.removeItem('token');
+        localStorage.removeItem('username');
+        localStorage.removeItem('fullname');
+        window.location.href = 'Login.html';
+        return;
       }
-    });
+
+      if (response.ok && result.success) {
+        console.log('Quotation saved successfully:', result);
+
+        // Clear pending quotation if any
+        localStorage.removeItem('pendingQuotation');
+
+        // Show success message
+        document.getElementById('quoteForm').style.display = 'none';
+        document.getElementById('successMessage').style.display = 'block';
+        document.getElementById('modalFooter').style.display = 'none';
+      } else {
+        throw new Error(result.message || 'Failed to submit quotation');
+      }
+
+    } catch (error) {
+      console.error('Error submitting quotation:', error);
+      alert('Failed to submit quotation: ' + error.message);
+      
+      // Re-enable button
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalText;
+    }
+  } else {
+    form.reportValidity();
+  }
+});
+
+// Handle logout
+const logoutBtn = document.getElementById('logoutBtn');
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    localStorage.removeItem('fullname');
+    window.location.href = 'Login.html';
+  });
+}
   </script>
       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">

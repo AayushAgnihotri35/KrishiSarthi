@@ -1,11 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const Quotation = require('../models/quotation');
+const auth = require('../middleware/auth');
 
-// Create new quotation (if you don't have this already)
-router.post('/', async (req, res) => {
+// Create new quotation - PROTECTED with auth middleware
+router.post('/', auth, async (req, res) => {
   try {
-    const quotation = new Quotation(req.body);
+    // Add userId from authenticated user
+    const quotation = new Quotation({
+      ...req.body,
+      userId: req.user.id
+    });
     await quotation.save();
     
     res.status(201).json({
@@ -23,7 +28,41 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Get all quotations
+// Get current user's quotations - PROTECTED
+router.get('/my-quotations', auth, async (req, res) => {
+  try {
+    const { status, page = 1, limit = 100 } = req.query;
+    
+    const filter = { userId: req.user.id };
+    if (status) filter.status = status;
+
+    const quotations = await Quotation.find(filter)
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+
+    const total = await Quotation.countDocuments(filter);
+
+    res.json({
+      success: true,
+      data: quotations,
+      pagination: {
+        total,
+        page: parseInt(page),
+        pages: Math.ceil(total / limit)
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching quotations:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch quotations',
+      error: error.message
+    });
+  }
+});
+
+// Get all quotations (admin/public view - without auth for marketplace)
 router.get('/', async (req, res) => {
   try {
     const { status, page = 1, limit = 100 } = req.query;
@@ -57,7 +96,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get quotations by phone number (customer's own quotations)
+// Get quotations by phone number (for backward compatibility/notifications)
 router.get('/customer/:phone', async (req, res) => {
   try {
     const quotations = await Quotation.find({ 
@@ -79,15 +118,18 @@ router.get('/customer/:phone', async (req, res) => {
   }
 });
 
-// Get single quotation
-router.get('/:id', async (req, res) => {
+// Get single quotation - PROTECTED (user can only view their own)
+router.get('/:id', auth, async (req, res) => {
   try {
-    const quotation = await Quotation.findById(req.params.id);
+    const quotation = await Quotation.findOne({
+      _id: req.params.id,
+      userId: req.user.id
+    });
     
     if (!quotation) {
       return res.status(404).json({
         success: false,
-        message: 'Quotation not found'
+        message: 'Quotation not found or unauthorized'
       });
     }
 
@@ -109,7 +151,7 @@ router.get('/:id', async (req, res) => {
 // ACCEPT & CANCEL ROUTES (NEW FUNCTIONALITY)
 // ============================================
 
-// Accept Equipment Quotation
+// Accept Equipment Quotation (Supplier side - no auth needed for accepting)
 router.patch('/:id/accept', async (req, res) => {
   try {
     const { id } = req.params;
@@ -164,26 +206,21 @@ router.patch('/:id/accept', async (req, res) => {
   }
 });
 
-// Cancel Equipment Quotation
-router.patch('/:id/cancel', async (req, res) => {
+// Cancel Equipment Quotation - PROTECTED
+router.patch('/:id/cancel', auth, async (req, res) => {
   try {
     const { id } = req.params;
-    const { cancelledBy, cancelReason, userPhone } = req.body;
+    const { cancelReason } = req.body;
 
-    const quotation = await Quotation.findById(id);
+    const quotation = await Quotation.findOne({
+      _id: id,
+      userId: req.user.id
+    });
     
     if (!quotation) {
       return res.status(404).json({
         success: false,
-        message: 'Quotation not found'
-      });
-    }
-
-    // Verify user is the owner
-    if (quotation.customerDetails.phone !== userPhone) {
-      return res.status(403).json({
-        success: false,
-        message: 'Unauthorized to cancel this quotation'
+        message: 'Quotation not found or unauthorized'
       });
     }
 
@@ -195,7 +232,7 @@ router.patch('/:id/cancel', async (req, res) => {
     }
 
     quotation.status = 'cancelled';
-    quotation.cancelledBy = cancelledBy;
+    quotation.cancelledBy = 'Customer';
     quotation.cancelledAt = new Date();
     quotation.cancelReason = cancelReason;
     
@@ -205,7 +242,7 @@ router.patch('/:id/cancel', async (req, res) => {
     quotation.statusHistory.push({
       status: 'cancelled',
       changedAt: new Date(),
-      changedBy: cancelledBy,
+      changedBy: 'Customer',
       notes: cancelReason || 'Quotation cancelled by customer'
     });
 
@@ -227,4 +264,78 @@ router.patch('/:id/cancel', async (req, res) => {
   }
 });
 
+
+// Add this route AFTER your cancel route and BEFORE module.exports
+
+// Complete/Fulfill Equipment Quotation - PROTECTED
+router.patch('/:id/complete', auth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rating, feedback, completedBy } = req.body;
+
+    const quotation = await Quotation.findOne({
+      _id: id,
+      userId: req.user.id
+    });
+    
+    if (!quotation) {
+      return res.status(404).json({
+        success: false,
+        message: 'Quotation not found or unauthorized'
+      });
+    }
+
+    if (quotation.status === 'cancelled') {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot complete a cancelled quotation'
+      });
+    }
+
+    if (quotation.status === 'completed') {
+      return res.status(400).json({
+        success: false,
+        message: 'Quotation is already completed'
+      });
+    }
+
+    // Update quotation
+    quotation.status = 'completed';
+    quotation.rating = rating;
+    quotation.feedback = feedback;
+    quotation.completedBy = completedBy || 'Customer';
+    quotation.completedAt = new Date();
+    quotation.updatedAt = new Date();
+    
+    // Add to status history
+    if (!quotation.statusHistory) {
+      quotation.statusHistory = [];
+    }
+    quotation.statusHistory.push({
+      status: 'completed',
+      changedAt: new Date(),
+      changedBy: completedBy || 'Customer',
+      notes: feedback || 'Quotation marked as fulfilled by customer',
+      rating: rating
+    });
+
+    await quotation.save();
+
+    res.json({
+      success: true,
+      message: 'Request marked as completed successfully',
+      data: quotation
+    });
+
+  } catch (error) {
+    console.error('Error completing quotation:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to complete quotation',
+      error: error.message
+    });
+  }
+});
+
+module.exports = router;
 module.exports = router;
