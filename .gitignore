@@ -1,0 +1,7 @@
+# Ignore environment variables
+.env
+
+# Optional common ignores
+.DS_Store
+Thumbs.db
+*.log
