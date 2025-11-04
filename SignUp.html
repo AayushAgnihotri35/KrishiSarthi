@@ -647,7 +647,8 @@
       signupBtn.textContent = '';
 
       try {
-        const res = await fetch('/api/auth/register', {
+       const API_BASE_URL = 'https://krishisarthi-xar0.onrender.com/api';
+       const res = await fetch(`${API_BASE_URL}/auth/register`, {         
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ fullname, username, email, password })

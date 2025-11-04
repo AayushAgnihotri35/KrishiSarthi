@@ -367,6 +367,9 @@
   </div>
 
   <script>
+    // API Configuration - IMPORTANT: Use full Render URL
+    const API_BASE_URL = 'https://krishisarthi-xar0.onrender.com/api';
+
     const togglePassword = document.getElementById('togglePassword');
     const passwordField = document.getElementById('password');
 
@@ -389,22 +392,28 @@
       loginBtn.classList.add('loading');
       loginBtn.textContent = '';
 
-      const username = document.getElementById('username').value;
+      const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value;
 
       try {
-        const res = await fetch('/api/auth/login', {
+        console.log('Attempting login to:', `${API_BASE_URL}/auth/login`);
+        
+        const res = await fetch(`${API_BASE_URL}/auth/login`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json'
+          },
           body: JSON.stringify({ username, password })
         });
 
+        console.log('Response status:', res.status);
         const data = await res.json();
+        console.log('Response data:', data);
         
         loginBtn.classList.remove('loading');
         loginBtn.textContent = 'Login';
 
-        if (res.ok) {
+        if (res.ok && data.success) {
           loginMessage.textContent = data.message || 'Login successful!';
           loginMessage.style.display = 'block';
           loginMessage.style.backgroundColor = '#d4edda';
@@ -412,9 +421,16 @@
           loginMessage.style.border = '1px solid #c3e6cb';
           
           // Store token and user info in localStorage
-          localStorage.setItem('token', data.token);
-          localStorage.setItem('username', data.user.username);
-          localStorage.setItem('fullname', data.user.fullname);
+          if (data.token) {
+            localStorage.setItem('token', data.token);
+          }
+          if (data.user) {
+            localStorage.setItem('user', JSON.stringify(data.user));
+            localStorage.setItem('username', data.user.username || username);
+            if (data.user.fullname) {
+              localStorage.setItem('fullname', data.user.fullname);
+            }
+          }
           
           setTimeout(() => window.location.href = 'index.html', 1500);
         } else {
@@ -425,10 +441,10 @@
           loginMessage.style.border = '1px solid #f5c6cb';
         }
       } catch (err) {
-        console.error(err);
+        console.error('Login error:', err);
         loginBtn.classList.remove('loading');
         loginBtn.textContent = 'Login';
-        loginMessage.textContent = 'Error connecting to server';
+        loginMessage.textContent = 'Error connecting to server. Please check if the backend is running.';
         loginMessage.style.display = 'block';
         loginMessage.style.backgroundColor = '#f8d7da';
         loginMessage.style.color = '#721c24';
