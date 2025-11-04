@@ -729,7 +729,7 @@ document.getElementById('submitQuote').addEventListener('click', async function(
 
     try {
       // Send data to backend API with authentication
-      const response = await fetch('http://localhost:5000/api/quotations', {
+      const response = await fetch('https://krishisarthi-xar0.onrender.com/api/quotations', {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(quotationData)
