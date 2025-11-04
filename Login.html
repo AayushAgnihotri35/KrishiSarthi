@@ -443,14 +443,28 @@
         });
 
         console.log('Response status:', res.status);
+        console.log('Response headers:', {
+          contentType: res.headers.get('content-type'),
+          cors: res.headers.get('access-control-allow-origin')
+        });
         
         let data;
-        try {
-          data = await res.json();
-          console.log('Response data:', data);
-        } catch (parseError) {
-          console.error('Failed to parse JSON:', parseError);
-          throw new Error('Invalid response from server');
+        const contentType = res.headers.get('content-type');
+        
+        if (contentType && contentType.includes('application/json')) {
+          try {
+            data = await res.json();
+            console.log('Response data:', data);
+          } catch (parseError) {
+            console.error('Failed to parse JSON:', parseError);
+            const text = await res.text();
+            console.error('Response text:', text);
+            throw new Error('Invalid JSON response from server');
+          }
+        } else {
+          const text = await res.text();
+          console.error('Non-JSON response:', text);
+          throw new Error('Server returned non-JSON response');
         }
         
         loginBtn.classList.remove('loading');
@@ -479,7 +493,14 @@
           
           // Redirect after short delay
           setTimeout(() => {
-            window.location.href = 'index.html';
+            // Check if we're on GitHub Pages or localhost
+            const isGitHubPages = window.location.hostname.includes('github.io');
+            if (isGitHubPages) {
+              // Use relative path for GitHub Pages
+              window.location.href = './index.html';
+            } else {
+              window.location.href = 'index.html';
+            }
           }, 1500);
         } else {
           // Error case

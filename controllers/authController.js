@@ -9,49 +9,102 @@ const registerUser = async (req, res) => {
   const { fullname, username, email, password } = req.body;
 
   if (!fullname || !username || !email || !password) {
-    return res.status(400).json({ message: "All fields are required" });
+    return res.status(400).json({ 
+      success: false,
+      message: "All fields are required" 
+    });
   }
 
   try {
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
-    if (existingUser) return res.status(400).json({ message: "Email or username already exists" });
+    if (existingUser) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Email or username already exists" 
+      });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({ fullname, username, email, password: hashedPassword });
     await newUser.save();
 
-    res.status(201).json({ message: "User registered successfully" });
+    // Generate token for auto-login after registration
+    const token = jwt.sign({ id: newUser._id }, JWT_SECRET, { expiresIn: "7d" });
+
+    res.status(201).json({ 
+      success: true,
+      message: "User registered successfully",
+      token,
+      user: {
+        id: newUser._id,
+        fullname: newUser.fullname,
+        username: newUser.username,
+        email: newUser.email
+      }
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
+    console.error('Registration error:', err);
+    res.status(500).json({ 
+      success: false,
+      message: "Server error" 
+    });
   }
 };
 
-// Login
+// Login - FIXED VERSION
 const loginUser = async (req, res) => {
   const { username, password } = req.body;
 
+  console.log('Login attempt for username:', username);
+
   if (!username || !password) {
-    return res.status(400).json({ message: "Username and password are required" });
+    return res.status(400).json({ 
+      success: false,
+      message: "Username and password are required" 
+    });
   }
 
   try {
     const user = await User.findOne({ username });
-    if (!user) return res.status(400).json({ message: "Invalid credentials" });
+    if (!user) {
+      console.log('User not found:', username);
+      return res.status(401).json({ 
+        success: false,
+        message: "Invalid credentials" 
+      });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
+    if (!isMatch) {
+      console.log('Password mismatch for:', username);
+      return res.status(401).json({ 
+        success: false,
+        message: "Invalid credentials" 
+      });
+    }
 
-    const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "1h" });
+    const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "7d" });
 
-    res.json({
+    console.log('Login successful for:', username);
+
+    // CRITICAL FIX: Added success: true
+    res.status(200).json({
+      success: true,  // ← THIS WAS MISSING!
       message: "Login successful",
       token,
-      user: { fullname: user.fullname, username: user.username, email: user.email }
+      user: { 
+        id: user._id,
+        fullname: user.fullname, 
+        username: user.username, 
+        email: user.email 
+      }
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
+    console.error('Login error:', err);
+    res.status(500).json({ 
+      success: false,
+      message: "Server error" 
+    });
   }
 };
 
@@ -59,18 +112,30 @@ const loginUser = async (req, res) => {
 const getProfile = async (req, res) => {
   try {
     if (!req.user || !req.user.id) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({ 
+        success: false,
+        message: "Unauthorized" 
+      });
     }
 
     const user = await User.findById(req.user.id).select("-password");
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ 
+        success: false,
+        message: "User not found" 
+      });
     }
 
-    res.json(user);
+    res.json({
+      success: true,
+      user
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
+    console.error('Get profile error:', err);
+    res.status(500).json({ 
+      success: false,
+      message: "Server error" 
+    });
   }
 };
 
