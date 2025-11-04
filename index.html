@@ -39,79 +39,101 @@
       width: 20px;
       margin-right: 8px;
     }
+
+    .welcome-text {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 10px 20px;
+      border-radius: 8px;
+      display: inline-block;
+      margin-top: 10px;
+    }
+
+    .user-greeting {
+      color: #198754;
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
   <!-- Navbar -->
-<!-- Master Navbar (Use on all pages) -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-success">
-  <div class="container-fluid">
-    <!-- Brand -->
-    <a class="navbar-brand" href="index.html">
-      <img src="./assests/logo.jpg" alt="Logo" width="40" height="40">
-      <strong>KrishiSarthi</strong>
-    </a>
-    <!-- Toggler (for mobile view) -->
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <!-- Navbar Links -->
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav ms-auto">
-        <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="weather.html">Weather & Advisory</a></li>
-        <li class="nav-item"><a class="nav-link" href="Equipment.html">Equipment</a></li>
-        <li class="nav-item"><a class="nav-link" href="market.html">Market Linkage</a></li>
-        <li class="nav-item"><a class="nav-link" href="marketplace.html">Market Place</a></li>
-        <li class="nav-item"><a class="nav-link" href="insurance.html">Insurance</a></li>
-        <li class="nav-item"><a class="nav-link" href="loan.html">Loan</a></li>
-        <li class="nav-item"><a class="nav-link" href="subcidy.html">Subsidy</a></li>
-
-        
-        <!-- Profile Dropdown -->
-        <li class="nav-item dropdown profile-dropdown ms-2">
-          <a class="nav-link dropdown-toggle p-0" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <div class="profile-icon">
-              <i class="fas fa-user"></i>
-            </div>
-          </a>
-          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-            <li>
-              <a class="dropdown-item" href="profile.html">
-                <i class="fas fa-user-circle"></i> My Profile
-              </a>
-            </li>
-            <li>
-              <a class="dropdown-item" href="orders.html">
-                <i class="fas fa-shopping-cart"></i> My Orders
-              </a>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+    <div class="container-fluid">
+      <!-- Brand -->
+      <a class="navbar-brand" href="index.html">
+        <img src="./assests/logo.jpg" alt="Logo" width="40" height="40">
+        <strong>KrishiSarthi</strong>
+      </a>
+      <!-- Toggler (for mobile view) -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <!-- Navbar Links -->
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="weather.html">Weather & Advisory</a></li>
+          <li class="nav-item"><a class="nav-link" href="Equipment.html">Equipment</a></li>
+          <li class="nav-item"><a class="nav-link" href="market.html">Market Linkage</a></li>
+          <li class="nav-item"><a class="nav-link" href="marketplace.html">Market Place</a></li>
+          <li class="nav-item"><a class="nav-link" href="insurance.html">Insurance</a></li>
+          <li class="nav-item"><a class="nav-link" href="loan.html">Loan</a></li>
+          <li class="nav-item"><a class="nav-link" href="subcidy.html">Subsidy</a></li>
+          
+          <!-- Profile Dropdown -->
+          <li class="nav-item dropdown profile-dropdown ms-2">
+            <a class="nav-link dropdown-toggle p-0" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <div class="profile-icon">
+                <i class="fas fa-user"></i>
+              </div>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+              <li class="px-3 py-2 border-bottom">
+                <small class="text-muted">Logged in as</small><br>
+                <strong id="dropdownUsername">Loading...</strong>
+              </li>
+              <li>
+                <a class="dropdown-item" href="profile.html">
+                  <i class="fas fa-user-circle"></i> My Profile
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="orders.html">
+                  <i class="fas fa-shopping-cart"></i> My Orders
+                </a>
+              </li>
               <li>
                 <a class="dropdown-item" href="notifications.html">
-                    <i class="fas fa-bell"></i> Notifications</a>
-                </li>
-            <li>
-            </li>
-            <li><hr class="dropdown-divider"></li>
-            <li>
-              <a class="dropdown-item text-danger" href="#" id="logoutBtn">
-                <i class="fas fa-sign-out-alt"></i> Logout
-              </a>
-            </li>
-          </ul>
-        </li>
-      </ul>
+                  <i class="fas fa-bell"></i> Notifications
+                </a>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <a class="dropdown-item text-danger" href="#" id="logoutBtn">
+                  <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
     </div>
-  </div>
-</nav>
+  </nav>
+
   <!-- Hero Section -->
   <header class="hero-section text-white text-center">
     <div class="overlay">
       <div class="container">
         <strong><h1 class="display-4">Welcome to KrishiSarthi Platform</h1></strong>
         <p class="lead">One-stop portal for all your farming needs</p>
+        <div class="welcome-text">
+          <p class="mb-0">
+            <span class="user-greeting">Hello, <span id="userFullname">Farmer</span>!</span>
+          </p>
+        </div>
       </div>
     </div>
   </header>
+
   <!-- Sample Section (Agri Inputs) -->
   <section class="container py-5" id="agri-inputs">
     <h2 class="text-center mb-4">Agri-Inputs</h2>
@@ -145,21 +167,101 @@
       </div>
     </div>
   </section>
+
   <!-- Footer -->
   <footer class="bg-success text-white text-center py-3">
     <p class="mb-0">&copy; 2025 KrishiSarthi Platform. All rights reserved.</p>
   </footer>
+
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="script.js"></script>
+  
   <script>
+    // API Configuration
+    const API_BASE_URL = 'https://krishisarthi-xar0.onrender.com/api';
+
+    // Check authentication on page load
+    window.addEventListener('DOMContentLoaded', async () => {
+      const token = localStorage.getItem('token');
+      const storedUsername = localStorage.getItem('username');
+      const storedFullname = localStorage.getItem('fullname');
+
+      // If no token, redirect to login
+      if (!token) {
+        console.log('No token found, redirecting to login...');
+        window.location.href = 'Login.html';
+        return;
+      }
+
+      // Display stored user info immediately (from localStorage)
+      if (storedUsername) {
+        document.getElementById('dropdownUsername').textContent = storedUsername;
+      }
+      if (storedFullname) {
+        document.getElementById('userFullname').textContent = storedFullname;
+      }
+
+      // Optional: Fetch fresh user data from API
+      try {
+        const response = await fetch(`${API_BASE_URL}/auth/profile`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
+
+        // Check if response is JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          console.warn('Server returned non-JSON response for profile');
+          // Don't throw error, just use stored data
+          return;
+        }
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Profile data:', data);
+          
+          // Update UI with fresh data
+          if (data.user || data.username) {
+            const user = data.user || data;
+            if (user.username) {
+              localStorage.setItem('username', user.username);
+              document.getElementById('dropdownUsername').textContent = user.username;
+            }
+            if (user.fullname) {
+              localStorage.setItem('fullname', user.fullname);
+              document.getElementById('userFullname').textContent = user.fullname;
+            }
+          }
+        } else {
+          console.warn('Failed to fetch profile, using stored data');
+        }
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+        // Don't redirect on error, just use stored data
+        console.log('Using stored user data instead');
+      }
+    });
+
     // Logout functionality
     document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
       e.preventDefault();
+      
+      // Clear all stored data
       localStorage.removeItem('token');
       localStorage.removeItem('username');
+      localStorage.removeItem('fullname');
+      localStorage.removeItem('user');
+      
+      // Redirect to login
       window.location.href = 'Login.html';
     });
   </script>
+  
+  <!-- Load external script.js if it exists (but after our main script) -->
+  <script src="script.js" onerror="console.log('script.js not found, using inline scripts')"></script>
 </body>
 </html>
