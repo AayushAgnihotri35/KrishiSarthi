@@ -19,10 +19,22 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: url("assests/farm-hero.jpg");
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       position: relative;
       overflow: hidden;
       background-size: cover;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("assests/farm-hero.jpg") center/cover;
+      opacity: 0.3;
+      z-index: 0;
     }
 
     .login-container {
@@ -72,13 +84,14 @@
     .logo-icon {
       width: 70px;
       height: 70px;
-      background: url("./assests/logo.jpg");
-      background-size: cover;
+      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
       border-radius: 50%;
+      display: flex;
       align-items: center;
       justify-content: center;
       margin: 0 auto 20px;
-      background-size: cover;
+      font-size: 32px;
+      color: white;
     }
 
     .login-card h2 {
@@ -260,6 +273,19 @@
       margin-bottom: 20px;
       font-size: 14px;
       animation: fadeIn 0.5s;
+      display: none;
+    }
+
+    .message-success {
+      background-color: #d4edda !important;
+      color: #155724 !important;
+      border: 1px solid #c3e6cb !important;
+    }
+
+    .message-error {
+      background-color: #f8d7da !important;
+      color: #721c24 !important;
+      border: 1px solid #f5c6cb !important;
     }
 
     .remember-forgot {
@@ -320,7 +346,9 @@
   <div class="login-container">
     <div class="login-card">
       <div class="logo-container">
-        <div class="logo-icon"></div>
+        <div class="logo-icon">
+          <i class="fas fa-seedling"></i>
+        </div>
         <h2>Welcome Back!</h2>
         <p>Login to your KrishiSarthi account</p>
       </div>
@@ -367,7 +395,7 @@
   </div>
 
   <script>
-    // API Configuration - IMPORTANT: Use full Render URL
+    // API Configuration
     const API_BASE_URL = 'https://krishisarthi-xar0.onrender.com/api';
 
     const togglePassword = document.getElementById('togglePassword');
@@ -384,10 +412,16 @@
     const loginMessage = document.getElementById('loginMessage');
     const loginBtn = document.getElementById('loginBtn');
 
+    function showMessage(message, isSuccess) {
+      loginMessage.textContent = message;
+      loginMessage.style.display = 'block';
+      loginMessage.className = isSuccess ? 'message-success' : 'message-error';
+    }
+
     loginForm.addEventListener('submit', async function(e) {
       e.preventDefault();
 
-      loginMessage.textContent = '';
+      // Reset message
       loginMessage.style.display = 'none';
       loginBtn.classList.add('loading');
       loginBtn.textContent = '';
@@ -401,54 +435,83 @@
         const res = await fetch(`${API_BASE_URL}/auth/login`, {
           method: 'POST',
           headers: { 
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
           },
+          credentials: 'include', // Include cookies if needed
           body: JSON.stringify({ username, password })
         });
 
         console.log('Response status:', res.status);
-        const data = await res.json();
-        console.log('Response data:', data);
+        
+        let data;
+        try {
+          data = await res.json();
+          console.log('Response data:', data);
+        } catch (parseError) {
+          console.error('Failed to parse JSON:', parseError);
+          throw new Error('Invalid response from server');
+        }
         
         loginBtn.classList.remove('loading');
         loginBtn.textContent = 'Login';
 
-        if (res.ok && data.success) {
-          loginMessage.textContent = data.message || 'Login successful!';
-          loginMessage.style.display = 'block';
-          loginMessage.style.backgroundColor = '#d4edda';
-          loginMessage.style.color = '#155724';
-          loginMessage.style.border = '1px solid #c3e6cb';
+        // Check if login was successful
+        // Handle different possible response structures
+        const isSuccess = res.ok || res.status === 200 || data.success === true || data.token;
+
+        if (isSuccess && data.token) {
+          // Success case
+          showMessage(data.message || 'Login successful! Redirecting...', true);
           
-          // Store token and user info in localStorage
-          if (data.token) {
-            localStorage.setItem('token', data.token);
-          }
+          // Store authentication data
+          localStorage.setItem('token', data.token);
+          
           if (data.user) {
             localStorage.setItem('user', JSON.stringify(data.user));
             localStorage.setItem('username', data.user.username || username);
             if (data.user.fullname) {
               localStorage.setItem('fullname', data.user.fullname);
             }
+          } else {
+            localStorage.setItem('username', username);
           }
           
-          setTimeout(() => window.location.href = 'index.html', 1500);
+          // Redirect after short delay
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 1500);
         } else {
-          loginMessage.textContent = data.message || 'Login failed';
-          loginMessage.style.display = 'block';
-          loginMessage.style.backgroundColor = '#f8d7da';
-          loginMessage.style.color = '#721c24';
-          loginMessage.style.border = '1px solid #f5c6cb';
+          // Error case
+          const errorMessage = data.message || data.error || 'Login failed. Please check your credentials.';
+          showMessage(errorMessage, false);
         }
       } catch (err) {
         console.error('Login error:', err);
         loginBtn.classList.remove('loading');
         loginBtn.textContent = 'Login';
-        loginMessage.textContent = 'Error connecting to server. Please check if the backend is running.';
-        loginMessage.style.display = 'block';
-        loginMessage.style.backgroundColor = '#f8d7da';
-        loginMessage.style.color = '#721c24';
-        loginMessage.style.border = '1px solid #f5c6cb';
+        
+        let errorMessage = 'Error connecting to server. ';
+        if (err.message.includes('Failed to fetch')) {
+          errorMessage += 'Please check your internet connection and ensure the backend server is running.';
+        } else if (err.message.includes('CORS')) {
+          errorMessage += 'CORS error detected. Please ensure the backend allows requests from this domain.';
+        } else {
+          errorMessage += err.message;
+        }
+        
+        showMessage(errorMessage, false);
+      }
+    });
+
+    // Check if user is already logged in
+    window.addEventListener('load', () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        console.log('User already has a token, checking validity...');
+        // Optionally verify token with backend before redirecting
+        // For now, just redirect
+        // window.location.href = 'index.html';
       }
     });
   </script>
