@@ -16,6 +16,7 @@ async function fetchWithAuth(url, options = {}) {
   
   const headers = {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
     ...options.headers
   };
   
@@ -29,12 +30,22 @@ async function fetchWithAuth(url, options = {}) {
       headers
     });
     
+    // Check if response is JSON before parsing
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.warn('Non-JSON response received from:', url);
+      throw new Error('Server returned non-JSON response');
+    }
+    
     const data = await response.json();
     
     // Handle unauthorized errors
     if (response.status === 401) {
       localStorage.removeItem('token');
-      window.location.href = 'login.html';
+      localStorage.removeItem('user');
+      localStorage.removeItem('username');
+      localStorage.removeItem('fullname');
+      window.location.href = 'Login.html';
       throw new Error('Session expired. Please login again.');
     }
     
@@ -97,11 +108,14 @@ if (heroHeading) {
     greeting = "Good Evening, Farmer!";
   }
 
-  // Append greeting under main heading
-  heroHeading.insertAdjacentHTML(
-    'afterend',
-    `<p class="mt-2 fs-5 text-light">${greeting}</p>`
-  );
+  // Check if greeting already exists to avoid duplicates
+  const existingGreeting = heroHeading.nextElementSibling;
+  if (!existingGreeting || !existingGreeting.classList.contains('dynamic-greeting')) {
+    heroHeading.insertAdjacentHTML(
+      'afterend',
+      `<p class="mt-2 fs-5 text-light dynamic-greeting">${greeting}</p>`
+    );
+  }
 }
 
 // ----------------------
@@ -133,21 +147,30 @@ document.addEventListener('DOMContentLoaded', () => {
 // Logout functionality
 document.addEventListener('DOMContentLoaded', () => {
   const logoutLink = document.getElementById('logoutLink');
+  const logoutBtn = document.getElementById('logoutBtn');
+
+  const handleLogout = (e) => {
+    e.preventDefault();
+    
+    // Clear all stored data
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('username');
+    localStorage.removeItem('fullname');
+    
+    // Show logout message
+    alert('You have been logged out successfully!');
+    
+    // Redirect to login page
+    window.location.href = 'Login.html';
+  };
 
   if (logoutLink) {
-    logoutLink.addEventListener('click', (e) => {
-      e.preventDefault();
-      
-      // Clear token and redirect
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      
-      // Show logout message
-      alert('You have been logged out successfully!');
-      
-      // Redirect to home page
-      window.location.href = 'index.html';
-    });
+    logoutLink.addEventListener('click', handleLogout);
+  }
+  
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', handleLogout);
   }
 });
 
@@ -169,14 +192,15 @@ async function checkAPIHealth() {
 }
 
 // Login function
-async function loginUser(email, password) {
+async function loginUser(username, password) {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
       },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ username, password })
     });
     
     const data = await response.json();
@@ -185,6 +209,10 @@ async function loginUser(email, password) {
       localStorage.setItem('token', data.token);
       if (data.user) {
         localStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.setItem('username', data.user.username);
+        if (data.user.fullname) {
+          localStorage.setItem('fullname', data.user.fullname);
+        }
       }
       return { success: true, data };
     } else {
@@ -202,7 +230,8 @@ async function registerUser(userData) {
     const response = await fetch(`${API_BASE_URL}/auth/register`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
       },
       body: JSON.stringify(userData)
     });
@@ -213,6 +242,10 @@ async function registerUser(userData) {
       localStorage.setItem('token', data.token);
       if (data.user) {
         localStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.setItem('username', data.user.username);
+        if (data.user.fullname) {
+          localStorage.setItem('fullname', data.user.fullname);
+        }
       }
       return { success: true, data };
     } else {
@@ -224,10 +257,11 @@ async function registerUser(userData) {
   }
 }
 
-// Get user profile
+// Get user profile - FIXED: Changed from /user/profile to /auth/profile
 async function getUserProfile() {
   try {
-    const { response, data } = await fetchWithAuth(`${API_BASE_URL}/user/profile`);
+    // CRITICAL FIX: Use /auth/profile instead of /user/profile
+    const { response, data } = await fetchWithAuth(`${API_BASE_URL}/auth/profile`);
     
     if (data.success) {
       return { success: true, user: data.user };
@@ -243,7 +277,7 @@ async function getUserProfile() {
 // Update user profile
 async function updateUserProfile(profileData) {
   try {
-    const { response, data } = await fetchWithAuth(`${API_BASE_URL}/user/profile`, {
+    const { response, data } = await fetchWithAuth(`${API_BASE_URL}/auth/profile`, {
       method: 'PUT',
       body: JSON.stringify(profileData)
     });
@@ -251,6 +285,10 @@ async function updateUserProfile(profileData) {
     if (data.success) {
       if (data.user) {
         localStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.setItem('username', data.user.username);
+        if (data.user.fullname) {
+          localStorage.setItem('fullname', data.user.fullname);
+        }
       }
       return { success: true, user: data.user };
     } else {
@@ -365,10 +403,10 @@ async function fetchWeatherData(location = 'Nagpur') {
 // INITIALIZATION
 // ----------------------
 
-// Check API health on page load
+// Check API health on page load (but don't fail if it errors)
 document.addEventListener('DOMContentLoaded', () => {
-  checkAPIHealth();
-  fetchWeatherData();
+  checkAPIHealth().catch(err => console.log('API health check skipped'));
+  fetchWeatherData().catch(err => console.log('Weather fetch skipped'));
 });
 
 // ----------------------
