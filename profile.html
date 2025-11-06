@@ -226,11 +226,15 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+// API Configuration - CRITICAL FIX
+const API_BASE_URL = 'https://krishisarthi-xar0.onrender.com/api';
+
 // Fetch profile data on page load
 document.addEventListener('DOMContentLoaded', async () => {
   const token = localStorage.getItem('token');
   
   if (!token) {
+    console.log('No token found, redirecting to login');
     window.location.href = 'Login.html';
     return;
   }
@@ -246,43 +250,92 @@ async function fetchProfile(token) {
   const profileContent = document.getElementById('profileContent');
 
   try {
-    const response = await fetch('/api/auth/profile', {
+    console.log('Fetching profile from:', `${API_BASE_URL}/auth/profile`);
+    
+    // CRITICAL FIX: Use full API URL instead of relative path
+    const response = await fetch(`${API_BASE_URL}/auth/profile`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
       }
     });
 
+    console.log('Profile response status:', response.status);
+
+    // Check if response is JSON
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.error('Non-JSON response received');
+      throw new Error('Server returned invalid response format');
+    }
+
     const data = await response.json();
+    console.log('Profile data received:', data);
 
     if (response.ok) {
+      // Handle different response structures
+      const userData = data.user || data;
+      
       // Update header
-      document.getElementById('profileName').textContent = data.fullname || 'User';
-      document.getElementById('profileUsername').textContent = `@${data.username || 'username'}`;
+      document.getElementById('profileName').textContent = userData.fullname || 'User';
+      document.getElementById('profileUsername').textContent = `@${userData.username || 'username'}`;
       
       // Fill profile fields
-      document.getElementById('fullname').textContent = data.fullname || '-';
-      document.getElementById('username').textContent = data.username || '-';
-      document.getElementById('email').textContent = data.email || '-';
+      document.getElementById('fullname').textContent = userData.fullname || '-';
+      document.getElementById('username').textContent = userData.username || '-';
+      document.getElementById('email').textContent = userData.email || '-';
       
       // Set member since year
-      if (data.createdAt) {
-        const year = new Date(data.createdAt).getFullYear();
+      if (userData.createdAt) {
+        const year = new Date(userData.createdAt).getFullYear();
         document.getElementById('memberSince').textContent = year;
+      }
+      
+      // Update localStorage
+      if (userData.username) {
+        localStorage.setItem('username', userData.username);
+      }
+      if (userData.fullname) {
+        localStorage.setItem('fullname', userData.fullname);
       }
       
       // Show profile content
       loadingSpinner.classList.add('d-none');
       profileContent.classList.remove('d-none');
     } else {
-      throw new Error(data.message || 'Failed to fetch profile');
+      // Handle error responses
+      if (response.status === 401) {
+        // Token expired or invalid
+        throw new Error('Session expired. Please login again.');
+      } else {
+        throw new Error(data.message || 'Failed to fetch profile');
+      }
     }
   } catch (error) {
     console.error('Error fetching profile:', error);
+    
     loadingSpinner.classList.add('d-none');
     errorMessage.classList.remove('d-none');
-    document.getElementById('errorText').textContent = error.message || 'Unable to load profile. Please try again.';
+    
+    let errorText = error.message || 'Unable to load profile. Please try again.';
+    
+    // Check for specific error types
+    if (error.message.includes('Failed to fetch')) {
+      errorText = 'Unable to connect to server. Please check your internet connection.';
+    } else if (error.message.includes('Session expired')) {
+      errorText = 'Session expired. Redirecting to login...';
+      setTimeout(() => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('username');
+        localStorage.removeItem('fullname');
+        window.location.href = 'Login.html';
+      }, 2000);
+    }
+    
+    document.getElementById('errorText').textContent = errorText;
   }
 }
 
@@ -298,9 +351,13 @@ function setupLogoutHandlers() {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
         if (confirm('Are you sure you want to logout?')) {
+          // Clear all stored data
           localStorage.removeItem('token');
+          localStorage.removeItem('user');
           localStorage.removeItem('username');
           localStorage.removeItem('fullname');
+          
+          // Redirect to login
           window.location.href = 'Login.html';
         }
       });
